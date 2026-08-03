@@ -3,14 +3,17 @@
 // Factures d'eau, électricité à répartir
 // ==============================================
 
+export type TypeCharge = 'eau' | 'electricite' | 'entretien' | 'gardiennage' | 'autre';
+export type CleRepartition = 'egal' | 'superficie' | 'occupants';
+
 export interface Charge {
   id: number;
   immeubleId: number;
-  typeCharge: 'eau' | 'electricite' | 'entretien' | 'autre';
+  typeCharge: TypeCharge;
   montantTotal: number;       // Montant global de la facture
   periodeFacture: string;     // Ex: "2026-08"
   dateFacture: Date;
-  modeRepartition: 'egal' | 'superficie' | 'occupants';
+  modeRepartition: CleRepartition;
   repartitions?: ChargeRepartition[];
 }
 
