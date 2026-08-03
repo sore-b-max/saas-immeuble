@@ -37,4 +37,12 @@ export class PaiementService {
   nombrePaiementsRetard = computed(() => 
     this.paiementsState().filter(p => p.statut === 'en_retard').length
   );
+
+  ajouterPaiement(paiement: Omit<Paiement, 'id'>) {
+    const nouveauPaiement: Paiement = {
+      ...paiement,
+      id: Math.floor(Math.random() * 1000) + 10 // ID généré aléatoirement pour la démo
+    };
+    this.paiementsState.update(paiementsActuels => [nouveauPaiement, ...paiementsActuels]);
+  }
 }

@@ -2,14 +2,13 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { LocataireService } from '../../core/services/locataire.service';
-import { Locataire } from '../../core/models/locataire.model';
 
 @Component({
   selector: 'app-locataires',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent, FormsModule],
+  imports: [CommonModule, RouterLink, NgIconComponent, ReactiveFormsModule],
   templateUrl: './locataires.component.html'
 })
 export class LocatairesComponent {
@@ -49,40 +48,36 @@ export class LocatairesComponent {
   // LEÇON 6 : LOGIQUE DU FORMULAIRE (MODAL)
   // ==========================================
   
+  private fb = inject(FormBuilder);
+
   // Contrôle l'affichage de la fenêtre modale
   afficherModal = signal(false);
 
-  // Modèle temporaire pour stocker les saisies du formulaire
-  nouveauLocataire: Omit<Locataire, 'id'> = {
-    nom: '',
-    prenom: '',
-    telephone: '',
-    numeroCNI: '',
-    appartementId: 0,
-    dateEntree: new Date(),
-    estActif: true
-  };
+  // Formulaire Réactif
+  locataireForm = this.fb.nonNullable.group({
+    nom: ['', Validators.required],
+    prenom: ['', Validators.required],
+    telephone: ['', [Validators.required, Validators.pattern(/^[+0-9\s]+$/)]],
+    numeroCNI: ['', Validators.required],
+    appartementId: [0, [Validators.required, Validators.min(1)]]
+  });
 
   sauvegarderLocataire() {
+    if (this.locataireForm.invalid) {
+      return;
+    }
+
     // 1. On envoie les données au service
-    // (On crée une copie avec la date du jour pour dateEntree)
     this.locataireService.ajouterLocataire({
-      ...this.nouveauLocataire,
-      dateEntree: new Date()
+      ...this.locataireForm.getRawValue(),
+      dateEntree: new Date(),
+      estActif: true
     });
 
     // 2. On referme la modale
     this.afficherModal.set(false);
 
     // 3. On réinitialise le formulaire pour la prochaine fois
-    this.nouveauLocataire = {
-      nom: '',
-      prenom: '',
-      telephone: '',
-      numeroCNI: '',
-      appartementId: 0,
-      dateEntree: new Date(),
-      estActif: true
-    };
+    this.locataireForm.reset();
   }
 }
