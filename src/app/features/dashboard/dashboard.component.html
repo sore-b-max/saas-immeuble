@@ -1,0 +1,138 @@
+<!-- ================================================
+  TEMPLATE : Tableau de bord propriétaire
+  Ce que le propriétaire voit sur son écran principal
+================================================= -->
+
+<div class="dashboard">
+
+  <!-- EN-TÊTE -->
+  <div class="dashboard-header">
+    <div>
+      <h1>Tableau de bord</h1>
+      <p class="date-today">Bienvenue ! Voici l'état de votre patrimoine immobilier.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary"><ng-icon name="lucidePlus" class="icon-align"></ng-icon> Ajouter un paiement</button>
+    </div>
+  </div>
+
+  <!-- CARTES DE STATISTIQUES PRINCIPALES -->
+  <div class="stats-grid">
+
+    <div class="stat-card blue">
+      <div class="stat-icon"><ng-icon name="lucideBuilding" size="32px"></ng-icon></div>
+      <div class="stat-content">
+        <span class="stat-number">{{ totalImmeubles() }}</span>
+        <span class="stat-label">Immeubles</span>
+      </div>
+    </div>
+
+    <div class="stat-card teal">
+      <div class="stat-icon"><ng-icon name="lucideHome" size="32px"></ng-icon></div>
+      <div class="stat-content">
+        <span class="stat-number">{{ totalAppartements() }}</span>
+        <span class="stat-label">Appartements</span>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon"><ng-icon name="lucideUsers" size="32px"></ng-icon></div>
+      <div class="stat-content">
+        <span class="stat-number">{{ totalLocataires() }}</span>
+        <span class="stat-label">Locataires actifs</span>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon"><ng-icon name="lucidePieChart" size="32px"></ng-icon></div>
+      <div class="stat-content">
+        <span class="stat-number">{{ tauxOccupation() }}%</span>
+        <span class="stat-label">Taux d'occupation</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION LOYERS DU MOIS -->
+  <div class="section-grid">
+
+    <!-- Statut des loyers -->
+    <div class="card">
+      <h2 class="card-title"><ng-icon name="lucideBanknote" class="icon-align"></ng-icon> Loyers — Août 2026</h2>
+
+      <div class="loyer-status">
+        <div class="loyer-item succes">
+          <span class="loyer-badge succes"><ng-icon name="lucideCheckCircle" class="icon-align"></ng-icon> Payés</span>
+          <span class="loyer-count">{{ loyersPayes() }}</span>
+        </div>
+        <div class="loyer-item attente">
+          <span class="loyer-badge attente"><ng-icon name="lucideClock" class="icon-align"></ng-icon> En attente</span>
+          <span class="loyer-count">{{ loyersEnAttente() }}</span>
+        </div>
+        <div class="loyer-item retard">
+          <span class="loyer-badge retard"><ng-icon name="lucideAlertCircle" class="icon-align"></ng-icon> En retard</span>
+          <span class="loyer-count">{{ loyersEnRetard() }}</span>
+        </div>
+      </div>
+
+      <div class="revenu-total">
+        <span>Revenu mensuel brut</span>
+        <strong>{{ revenuMensuel() | number }} FCFA</strong>
+      </div>
+      <div class="revenu-net">
+        <span>Revenu net (après travaux)</span>
+        <strong class="green-text">{{ revenuNet() | number }} FCFA</strong>
+      </div>
+    </div>
+
+    <!-- Raccourcis de navigation -->
+    <div class="card">
+      <h2 class="card-title"><ng-icon name="lucideRocket" class="icon-align"></ng-icon> Accès rapide</h2>
+      <div class="quick-links">
+        <a routerLink="/locataires" class="quick-link blue">
+          <span class="ql-icon"><ng-icon name="lucideUsers" size="24px"></ng-icon></span>
+          <span>Locataires</span>
+        </a>
+        <a routerLink="/loyers" class="quick-link green">
+          <span class="ql-icon"><ng-icon name="lucideBanknote" size="24px"></ng-icon></span>
+          <span>Loyers</span>
+        </a>
+        <a routerLink="/charges" class="quick-link orange">
+          <span class="ql-icon"><ng-icon name="lucideZap" size="24px"></ng-icon></span>
+          <span>Charges</span>
+        </a>
+        <a routerLink="/travaux" class="quick-link red">
+          <span class="ql-icon"><ng-icon name="lucideWrench" size="24px"></ng-icon></span>
+          <span>Travaux</span>
+        </a>
+        <a routerLink="/immeubles" class="quick-link teal">
+          <span class="ql-icon"><ng-icon name="lucideBuilding" size="24px"></ng-icon></span>
+          <span>Immeubles</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ACTIVITÉS RÉCENTES -->
+  <div class="card">
+    <h2 class="card-title"><ng-icon name="lucideClock" class="icon-align"></ng-icon> Activités récentes</h2>
+    <div class="activites-list">
+      @for (activite of activitesRecentes(); track activite.texte) {
+        <div class="activite-item">
+          <span class="activite-icone"><ng-icon [name]="activite.icone" size="24px"></ng-icon></span>
+          <div class="activite-detail">
+            <p class="activite-texte">{{ activite.texte }}</p>
+            <small class="activite-temps">{{ activite.temps }}</small>
+          </div>
+          <span class="activite-badge {{ activite.type }}">
+            @if (activite.type === 'succes') { Succès }
+            @else if (activite.type === 'alerte') { Alerte }
+            @else { Info }
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

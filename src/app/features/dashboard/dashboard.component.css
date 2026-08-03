@@ -1,0 +1,251 @@
+/* ================================================
+   STYLES : Tableau de bord propriétaire
+   Design moderne adapté au contexte africain
+================================================= */
+
+/* Variables CSS globales */
+:host {
+  --bleu: #1e40af;
+  --teal: #0f766e;
+  --vert: #15803d;
+  --violet: #7c3aed;
+  --orange: #ea580c;
+  --rouge: #dc2626;
+  --gris-bg: #f1f5f9;
+  --blanc: #ffffff;
+  --texte: #1e293b;
+  --texte-doux: #64748b;
+}
+
+.dashboard {
+  padding: 2rem;
+  background-color: var(--gris-bg);
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  color: var(--texte);
+}
+
+/* EN-TÊTE */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--texte);
+}
+
+.date-today {
+  color: var(--texte-doux);
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: var(--bleu);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover { background: #1e3a8a; }
+
+/* CARTES STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--blanc);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border-left: 4px solid transparent;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover { transform: translateY(-3px); }
+.stat-card.blue   { border-left-color: var(--bleu); }
+.stat-card.teal   { border-left-color: var(--teal); }
+.stat-card.green  { border-left-color: var(--vert); }
+.stat-card.purple { border-left-color: var(--violet); }
+
+.stat-icon { font-size: 2.2rem; }
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--texte);
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  color: var(--texte-doux);
+  margin-top: 0.2rem;
+}
+
+/* GRILLE SECTIONS */
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* CARTE GÉNÉRIQUE */
+.card {
+  background: var(--blanc);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 1.2rem;
+  color: var(--texte);
+}
+
+/* STATUT DES LOYERS */
+.loyer-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.loyer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.loyer-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.loyer-count {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.loyer-item.succes  .loyer-count { color: var(--vert); }
+.loyer-item.attente .loyer-count { color: var(--orange); }
+.loyer-item.retard  .loyer-count { color: var(--rouge); }
+
+.revenu-total, .revenu-net {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.green-text { color: var(--vert); }
+
+/* ACCÈS RAPIDE */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: white;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.quick-link:hover { opacity: 0.85; transform: translateY(-2px); }
+
+.quick-link.blue   { background: var(--bleu); }
+.quick-link.green  { background: var(--vert); }
+.quick-link.orange { background: var(--orange); }
+.quick-link.red    { background: var(--rouge); }
+.quick-link.teal   { background: var(--teal); }
+
+.ql-icon { font-size: 1.5rem; }
+
+/* ACTIVITÉS RÉCENTES */
+.activites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.activite-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.activite-item:last-child { border-bottom: none; }
+
+.activite-icone { font-size: 1.5rem; }
+
+.activite-detail { flex: 1; }
+.activite-texte  { margin: 0; font-size: 0.9rem; font-weight: 500; }
+.activite-temps  { color: var(--texte-doux); font-size: 0.78rem; }
+
+.activite-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.activite-badge.succes { background: #dcfce7; color: #166534; }
+.activite-badge.alerte { background: #fee2e2; color: #991b1b; }
+.activite-badge.info   { background: #dbeafe; color: #1e40af; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .stats-grid    { grid-template-columns: repeat(2, 1fr); }
+  .section-grid  { grid-template-columns: 1fr; }
+  .quick-links   { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+}
+
+/* Alignement des ic�nes inline */
+.icon-align {
+  vertical-align: text-bottom;
+  margin-right: 4px;
+}
