@@ -37,6 +37,14 @@ export const routes: Routes = [
         .then(m => m.AppartementsComponent)
   },
 
+  // Module Loyers
+  {
+    path: 'loyers',
+    loadComponent: () =>
+      import('./features/loyers/loyers.component')
+        .then(m => m.LoyersComponent)
+  },
+
   // (Les autres modules seront ajoutés dans les leçons suivantes)
 
   // Page 404 — route inconnue
