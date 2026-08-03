@@ -29,6 +29,14 @@ export const routes: Routes = [
         .then(m => m.LocatairesComponent)
   },
 
+  // Module Appartements
+  {
+    path: 'appartements',
+    loadComponent: () =>
+      import('./features/appartements/appartements.component')
+        .then(m => m.AppartementsComponent)
+  },
+
   // (Les autres modules seront ajoutés dans les leçons suivantes)
 
   // Page 404 — route inconnue
