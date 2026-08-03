@@ -45,4 +45,12 @@ export class PaiementService {
     };
     this.paiementsState.update(paiementsActuels => [nouveauPaiement, ...paiementsActuels]);
   }
+
+  modifierPaiement(id: number, paiementModifie: Partial<Paiement>) {
+    this.paiementsState.update(paiementsActuels => 
+      paiementsActuels.map(p => 
+        p.id === id ? { ...p, ...paiementModifie } : p
+      )
+    );
+  }
 }

@@ -30,6 +30,8 @@ export class LoyersComponent {
   
   afficherModal = signal(false);
 
+  paiementEnEdition = signal<number | null>(null);
+
   paiementForm = this.fb.nonNullable.group({
     appartementId: [0, [Validators.required, Validators.min(1)]],
     locataireId: [0, [Validators.required, Validators.min(1)]],
@@ -38,25 +40,54 @@ export class LoyersComponent {
     reference: ['']
   });
 
+  ouvrirModale(paiement?: any) {
+    if (paiement) {
+      this.paiementEnEdition.set(paiement.id);
+      this.paiementForm.patchValue({
+        appartementId: paiement.appartementId,
+        locataireId: paiement.locataireId,
+        montant: paiement.montant,
+        modePaiement: paiement.modePaiement,
+        reference: paiement.reference
+      });
+    } else {
+      this.paiementEnEdition.set(null);
+      this.paiementForm.reset({ modePaiement: 'especes' });
+    }
+    this.afficherModal.set(true);
+  }
+
   enregistrerPaiement() {
     if (this.paiementForm.invalid) return;
 
     const formValue = this.paiementForm.getRawValue();
+    const paiementId = this.paiementEnEdition();
 
-    this.paiementService.ajouterPaiement({
-      appartementId: formValue.appartementId,
-      locataireId: formValue.locataireId,
-      montant: formValue.montant,
-      modePaiement: formValue.modePaiement as any,
-      reference: formValue.reference,
-      moisConcerne: '2026-08',
-      datePaiement: new Date(),
-      statut: 'paye'
-    });
+    if (paiementId) {
+      this.paiementService.modifierPaiement(paiementId, {
+        appartementId: formValue.appartementId,
+        locataireId: formValue.locataireId,
+        montant: formValue.montant,
+        modePaiement: formValue.modePaiement as any,
+        reference: formValue.reference
+      });
+      this.toastService.showSuccess('Paiement modifié avec succès !');
+    } else {
+      this.paiementService.ajouterPaiement({
+        appartementId: formValue.appartementId,
+        locataireId: formValue.locataireId,
+        montant: formValue.montant,
+        modePaiement: formValue.modePaiement as any,
+        reference: formValue.reference,
+        moisConcerne: '2026-08',
+        datePaiement: new Date(),
+        statut: 'paye'
+      });
+      this.toastService.showSuccess('Loyer encaissé avec succès !');
+    }
 
     this.afficherModal.set(false);
-    this.paiementForm.reset();
-
-    this.toastService.showSuccess('Loyer encaissé avec succès !');
+    this.paiementEnEdition.set(null);
+    this.paiementForm.reset({ modePaiement: 'especes' });
   }
 }

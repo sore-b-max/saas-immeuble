@@ -30,6 +30,8 @@ export class AppartementsComponent {
   
   afficherModal = signal(false);
 
+  appartementEnEdition = signal<number | null>(null);
+
   appartementForm = this.fb.nonNullable.group({
     numero: ['', Validators.required],
     superficie: [0, [Validators.required, Validators.min(10)]],
@@ -37,22 +39,49 @@ export class AppartementsComponent {
     statut: ['vacant', Validators.required]
   });
 
+  ouvrirModale(apt?: any) {
+    if (apt) {
+      this.appartementEnEdition.set(apt.id);
+      this.appartementForm.patchValue({
+        numero: apt.numero,
+        superficie: apt.superficie,
+        loyer: apt.loyer,
+        statut: apt.statut
+      });
+    } else {
+      this.appartementEnEdition.set(null);
+      this.appartementForm.reset({ statut: 'vacant' });
+    }
+    this.afficherModal.set(true);
+  }
+
   enregistrerAppartement() {
     if (this.appartementForm.invalid) return;
 
     const formValue = this.appartementForm.getRawValue();
+    const aptId = this.appartementEnEdition();
 
-    this.appartementService.ajouterAppartement({
-      numero: formValue.numero,
-      superficie: formValue.superficie,
-      loyer: formValue.loyer,
-      statut: formValue.statut as any,
-      immeubleId: 1 // Valeur par défaut pour l'instant
-    });
+    if (aptId) {
+      this.appartementService.modifierAppartement(aptId, {
+        numero: formValue.numero,
+        superficie: formValue.superficie,
+        loyer: formValue.loyer,
+        statut: formValue.statut as any
+      });
+      this.toastService.showSuccess('Appartement modifié avec succès !');
+    } else {
+      this.appartementService.ajouterAppartement({
+        numero: formValue.numero,
+        superficie: formValue.superficie,
+        loyer: formValue.loyer,
+        statut: formValue.statut as any,
+        immeubleId: 1 // Valeur par défaut pour l'instant
+      });
+      this.toastService.showSuccess('Appartement ajouté avec succès !');
+    }
 
     this.afficherModal.set(false);
+    this.appartementEnEdition.set(null);
     this.appartementForm.reset({ statut: 'vacant' });
-
-    this.toastService.showSuccess('Appartement ajouté avec succès !');
   }
 }

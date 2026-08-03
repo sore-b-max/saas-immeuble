@@ -15,7 +15,10 @@ import {
   lucidePlus,
   lucideAlertTriangle,
   lucideUserPlus,
-  lucideRocket
+  lucideRocket,
+  lucideEdit,
+  lucideInfo,
+  lucideX
 } from '@ng-icons/lucide';
 import { tablerSearch, tablerBell } from '@ng-icons/tabler-icons';
 
@@ -40,6 +43,9 @@ export const appConfig: ApplicationConfig = {
       lucideAlertTriangle,
       lucideUserPlus,
       lucideRocket,
+      lucideEdit,
+      lucideInfo,
+      lucideX,
       tablerSearch,
       tablerBell
     })

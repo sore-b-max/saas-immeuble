@@ -39,4 +39,12 @@ export class AppartementService {
     };
     this.appartementsState.update(actuels => [nouvelApt, ...actuels]);
   }
+
+  modifierAppartement(id: number, appartementModifie: Partial<Appartement>) {
+    this.appartementsState.update(actuels => 
+      actuels.map(apt => 
+        apt.id === id ? { ...apt, ...appartementModifie } : apt
+      )
+    );
+  }
 }
