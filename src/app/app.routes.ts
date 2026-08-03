@@ -53,6 +53,14 @@ export const routes: Routes = [
         .then(m => m.ChargesComponent)
   },
 
+  // Module Baux et Contrats
+  {
+    path: 'baux',
+    loadComponent: () =>
+      import('./features/baux/baux.component')
+        .then(m => m.BauxComponent)
+  },
+
   // Module Travaux
   {
     path: 'travaux',
