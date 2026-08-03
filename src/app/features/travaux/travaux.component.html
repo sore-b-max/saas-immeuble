@@ -1,21 +1,19 @@
-<div class="space-y-6 bg-gray-50 min-h-screen p-6 rounded-2xl">
+<div class="p-6 bg-gray-50 min-h-screen font-sans">
   <!-- En-tête -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-        <ng-icon name="lucideHammer" class="text-indigo-600"></ng-icon>
-        Suivi des Travaux
-      </h1>
-      <p class="text-slate-500 mt-1">Gérez les interventions, suivez leur statut et conservez les preuves visuelles.</p>
+      <div class="flex items-center gap-3">
+        <a routerLink="/" class="text-blue-600 hover:text-blue-800 transition-colors">
+          <ng-icon name="lucideHome" size="24px"></ng-icon>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-800">Suivi des Travaux</h1>
+      </div>
+      <p class="text-gray-500 mt-2 text-sm">Gérez les interventions, suivez leur statut et conservez les preuves visuelles.</p>
     </div>
     
     <div class="flex gap-3">
-      <a routerLink="/" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm font-medium flex items-center gap-2">
-        <ng-icon name="lucideHome" size="18px"></ng-icon>
-        Accueil
-      </a>
-      <button (click)="ouvrirModale()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium flex items-center gap-2">
-        <ng-icon name="lucidePlus" size="18px"></ng-icon>
+      <button (click)="ouvrirModale()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all flex items-center gap-2">
+        <ng-icon name="lucidePlus" size="20px"></ng-icon>
         Signaler un problème
       </button>
     </div>
@@ -106,7 +104,7 @@
         </div>
 
         <div class="flex justify-between items-center mt-2">
-          <button (click)="simulerAjoutPhoto(travail.id)" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1 transition-colors">
+          <button (click)="simulerAjoutPhoto(travail.id)" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 transition-colors">
             <ng-icon name="lucideImagePlus" size="16px"></ng-icon>
             Ajouter une photo
           </button>
@@ -145,18 +143,18 @@
     <div class="p-6 space-y-5 overflow-y-auto">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1.5">Titre du problème *</label>
-        <input type="text" [(ngModel)]="nouveauTravail().titre" placeholder="Ex: Fuite d'eau cuisine" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        <input type="text" [(ngModel)]="nouveauTravail().titre" placeholder="Ex: Fuite d'eau cuisine" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
       </div>
       
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1.5">Description détaillée *</label>
-        <textarea [(ngModel)]="nouveauTravail().description" rows="3" placeholder="Expliquez le problème..." class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+        <textarea [(ngModel)]="nouveauTravail().description" rows="3" placeholder="Expliquez le problème..." class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
       </div>
 
       <div class="grid grid-cols-2 gap-5">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Appartement concerné *</label>
-          <select [(ngModel)]="nouveauTravail().appartementId" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+          <select [(ngModel)]="nouveauTravail().appartementId" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
             <option value="0" disabled selected>Sélectionnez...</option>
             <option *ngFor="let apt of appartements()" [value]="apt.id">Appartement {{ apt.numero }}</option>
           </select>
@@ -164,7 +162,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Coût estimé *</label>
           <div class="relative">
-            <input type="number" [(ngModel)]="nouveauTravail().cout" min="0" class="w-full pl-3 pr-16 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+            <input type="number" [(ngModel)]="nouveauTravail().cout" min="0" class="w-full pl-3 pr-16 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
             <div class="absolute inset-y-0 right-0 flex items-center bg-gray-50 border-l border-gray-200 rounded-r-lg px-3">
               <span class="text-gray-500 font-medium text-xs">FCFA</span>
             </div>
@@ -175,7 +173,7 @@
     
     <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/80">
       <button (click)="fermerModale()" class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors shadow-sm">Annuler</button>
-      <button (click)="soumettreTravail()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+      <button (click)="soumettreTravail()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
         <ng-icon name="lucideCheckCircle" size="18px"></ng-icon>
         Enregistrer
       </button>
