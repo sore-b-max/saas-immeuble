@@ -5,6 +5,9 @@ import { NgIconComponent } from '@ng-icons/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { PaiementService } from '../../core/services/paiement.service';
 import { ToastService } from '../../core/services/toast.service';
+import { PdfService } from '../../core/services/pdf.service';
+import { LocataireService } from '../../core/services/locataire.service';
+import { AppartementService } from '../../core/services/appartement.service';
 
 @Component({
   selector: 'app-loyers',
@@ -28,6 +31,10 @@ export class LoyersComponent {
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
   
+  private locataireService = inject(LocataireService);
+  private appartementService = inject(AppartementService);
+  private pdfService = inject(PdfService);
+
   afficherModal = signal(false);
 
   paiementEnEdition = signal<number | null>(null);
@@ -89,5 +96,16 @@ export class LoyersComponent {
     this.afficherModal.set(false);
     this.paiementEnEdition.set(null);
     this.paiementForm.reset({ modePaiement: 'especes' });
+  }
+
+  telechargerQuittance(paiement: any) {
+    const locataires = this.locataireService.locataires();
+    const appartements = this.appartementService.appartements();
+    
+    const locataire = locataires.find(l => l.id === paiement.locataireId);
+    const appartement = appartements.find(a => a.id === paiement.appartementId);
+    
+    this.pdfService.genererQuittance(paiement, locataire, appartement);
+    this.toastService.showSuccess('Quittance générée avec succès !');
   }
 }

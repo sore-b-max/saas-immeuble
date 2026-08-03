@@ -109,11 +109,12 @@
                   }
                 }
               </td>
-              <td class="px-6 py-4 text-right">
-                <button (click)="ouvrirModale(paiement)" class="text-blue-500 hover:text-blue-700 transition-colors mr-3" title="Modifier ce paiement">
+              <td class="px-6 py-4 text-right flex justify-end items-center">
+                <button (click)="ouvrirModale(paiement)" class="text-blue-500 hover:text-blue-700 transition-colors mr-3 mt-1" title="Modifier ce paiement">
                   <ng-icon name="lucideEdit" size="18px"></ng-icon>
                 </button>
-                <button class="text-blue-600 hover:text-blue-800 transition-colors text-sm font-medium">
+                <button (click)="telechargerQuittance(paiement)" class="text-blue-600 hover:text-blue-800 transition-colors text-sm font-medium flex items-center gap-1" title="Télécharger la quittance">
+                  <ng-icon name="lucideDownload" size="16px"></ng-icon>
                   Reçu
                 </button>
               </td>
