@@ -19,7 +19,8 @@ import {
   lucideEdit,
   lucideInfo,
   lucideX,
-  lucideDownload
+  lucideDownload,
+  lucideSettings
 } from '@ng-icons/lucide';
 import { tablerSearch, tablerBell } from '@ng-icons/tabler-icons';
 
@@ -48,6 +49,7 @@ export const appConfig: ApplicationConfig = {
       lucideInfo,
       lucideX,
       lucideDownload,
+      lucideSettings,
       tablerSearch,
       tablerBell
     })

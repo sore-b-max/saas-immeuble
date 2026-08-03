@@ -61,6 +61,14 @@ export const routes: Routes = [
         .then(m => m.TravauxComponent)
   },
 
+  // Module Paramètres (Configuration de l'immeuble)
+  {
+    path: 'parametres',
+    loadComponent: () =>
+      import('./features/parametres/parametres.component')
+        .then(m => m.ParametresComponent)
+  },
+
   // (Les autres modules seront ajoutés dans les leçons suivantes)
 
   // Page 404 — route inconnue

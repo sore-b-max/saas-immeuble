@@ -8,6 +8,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { QuittancePdfService } from '../../core/services/quittance-pdf.service';
 import { LocataireService } from '../../core/services/locataire.service';
 import { AppartementService } from '../../core/services/appartement.service';
+import { ImmeubleService } from '../../core/services/immeuble.service';
 import { QuittanceData } from '../../core/models/quittance.model';
 
 @Component({
@@ -35,6 +36,7 @@ export class LoyersComponent {
   private locataireService = inject(LocataireService);
   private appartementService = inject(AppartementService);
   private pdfService = inject(QuittancePdfService);
+  private immeubleService = inject(ImmeubleService);
 
   afficherModal = signal(false);
 
@@ -102,6 +104,7 @@ export class LoyersComponent {
   telechargerQuittance(paiement: any) {
     const locataires = this.locataireService.locataires();
     const appartements = this.appartementService.appartements();
+    const immeuble = this.immeubleService.immeuble();
     
     const locataire = locataires.find(l => l.id === paiement.locataireId);
     const appartement = appartements.find(a => a.id === paiement.appartementId);
@@ -113,9 +116,10 @@ export class LoyersComponent {
       reference: paiement.reference,
       montant: paiement.montant,
       bailleur: {
-        nom: 'Gestion SaaS Immeuble',
-        adresse: '01 BP 1234 Ouagadougou 01',
-        telephone: '+226 70 00 00 00'
+        nom: immeuble.nomProprietaire || immeuble.nom || 'Gestion SaaS Immeuble',
+        adresse: immeuble.adresse || '01 BP 1234 Ouagadougou 01',
+        telephone: immeuble.telephone || '+226 70 00 00 00',
+        logoBase64: immeuble.logoUrl || undefined
       },
       locataire: {
         nomComplet: locataire ? `${locataire.prenom} ${locataire.nom}` : `Locataire ID ${paiement.locataireId}`,

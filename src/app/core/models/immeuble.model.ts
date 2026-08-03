@@ -11,5 +11,9 @@ export interface Immeuble {
   nombreEtages: number;
   nombreAppartements: number;
   proprietaireId: number;
+  nomProprietaire?: string;
+  telephone?: string;
+  logoUrl?: string;     // URL ou base64 du logo
+  devise?: string;      // Ex: "FCFA"
   dateCreation: Date;
 }
