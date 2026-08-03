@@ -2,12 +2,14 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
+import { FormsModule } from '@angular/forms';
 import { LocataireService } from '../../core/services/locataire.service';
+import { Locataire } from '../../core/models/locataire.model';
 
 @Component({
   selector: 'app-locataires',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent],
+  imports: [CommonModule, RouterLink, NgIconComponent, FormsModule],
   templateUrl: './locataires.component.html'
 })
 export class LocatairesComponent {
@@ -41,5 +43,46 @@ export class LocatairesComponent {
     if(confirm('Voulez-vous vraiment archiver ce locataire ?')) {
       this.locataireService.archiverLocataire(id);
     }
+  }
+
+  // ==========================================
+  // LEÇON 6 : LOGIQUE DU FORMULAIRE (MODAL)
+  // ==========================================
+  
+  // Contrôle l'affichage de la fenêtre modale
+  afficherModal = signal(false);
+
+  // Modèle temporaire pour stocker les saisies du formulaire
+  nouveauLocataire: Omit<Locataire, 'id'> = {
+    nom: '',
+    prenom: '',
+    telephone: '',
+    numeroCNI: '',
+    appartementId: 0,
+    dateEntree: new Date(),
+    estActif: true
+  };
+
+  sauvegarderLocataire() {
+    // 1. On envoie les données au service
+    // (On crée une copie avec la date du jour pour dateEntree)
+    this.locataireService.ajouterLocataire({
+      ...this.nouveauLocataire,
+      dateEntree: new Date()
+    });
+
+    // 2. On referme la modale
+    this.afficherModal.set(false);
+
+    // 3. On réinitialise le formulaire pour la prochaine fois
+    this.nouveauLocataire = {
+      nom: '',
+      prenom: '',
+      telephone: '',
+      numeroCNI: '',
+      appartementId: 0,
+      dateEntree: new Date(),
+      estActif: true
+    };
   }
 }
