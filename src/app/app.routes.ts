@@ -21,6 +21,14 @@ export const routes: Routes = [
         .then(m => m.DashboardComponent)
   },
 
+  // Module Locataires
+  {
+    path: 'locataires',
+    loadComponent: () =>
+      import('./features/locataires/locataires.component')
+        .then(m => m.LocatairesComponent)
+  },
+
   // (Les autres modules seront ajoutés dans les leçons suivantes)
 
   // Page 404 — route inconnue
