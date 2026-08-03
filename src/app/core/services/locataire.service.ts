@@ -83,4 +83,12 @@ export class LocataireService {
       )
     );
   }
+
+  public modifierLocataire(id: number, locataireModifie: Partial<Locataire>): void {
+    this.locatairesSignal.update(locatairesActuels => 
+      locatairesActuels.map(loc => 
+        loc.id === id ? { ...loc, ...locataireModifie } : loc
+      )
+    );
+  }
 }

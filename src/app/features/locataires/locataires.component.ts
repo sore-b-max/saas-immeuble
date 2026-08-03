@@ -55,6 +55,9 @@ export class LocatairesComponent {
   // Contrôle l'affichage de la fenêtre modale
   afficherModal = signal(false);
 
+  // Mode édition : stocke l'ID du locataire en cours de modification, null si ajout
+  locataireEnEdition = signal<number | null>(null);
+
   // Formulaire Réactif
   locataireForm = this.fb.nonNullable.group({
     nom: ['', Validators.required],
@@ -64,25 +67,51 @@ export class LocatairesComponent {
     appartementId: [0, [Validators.required, Validators.min(1)]]
   });
 
+  ouvrirModale(locataire?: any) {
+    if (locataire) {
+      // Mode Édition
+      this.locataireEnEdition.set(locataire.id);
+      this.locataireForm.patchValue({
+        nom: locataire.nom,
+        prenom: locataire.prenom,
+        telephone: locataire.telephone,
+        numeroCNI: locataire.numeroCNI,
+        appartementId: locataire.appartementId
+      });
+    } else {
+      // Mode Ajout
+      this.locataireEnEdition.set(null);
+      this.locataireForm.reset();
+    }
+    this.afficherModal.set(true);
+  }
+
   sauvegarderLocataire() {
     if (this.locataireForm.invalid) {
       return;
     }
 
-    // 1. On envoie les données au service
-    this.locataireService.ajouterLocataire({
-      ...this.locataireForm.getRawValue(),
-      dateEntree: new Date(),
-      estActif: true
-    });
+    const locataireId = this.locataireEnEdition();
+
+    if (locataireId) {
+      // 1. Modification
+      this.locataireService.modifierLocataire(locataireId, this.locataireForm.getRawValue());
+      this.toastService.showSuccess('Locataire modifié avec succès !');
+    } else {
+      // 1. Ajout
+      this.locataireService.ajouterLocataire({
+        ...this.locataireForm.getRawValue(),
+        dateEntree: new Date(),
+        estActif: true
+      });
+      this.toastService.showSuccess('Locataire ajouté avec succès !');
+    }
 
     // 2. On referme la modale
     this.afficherModal.set(false);
 
-    // 3. On réinitialise le formulaire pour la prochaine fois
+    // 3. On réinitialise
+    this.locataireEnEdition.set(null);
     this.locataireForm.reset();
-
-    // 4. Notification
-    this.toastService.showSuccess('Locataire ajouté avec succès !');
   }
 }
