@@ -53,6 +53,14 @@ export const routes: Routes = [
         .then(m => m.ChargesComponent)
   },
 
+  // Module Travaux
+  {
+    path: 'travaux',
+    loadComponent: () =>
+      import('./features/travaux/travaux.component')
+        .then(m => m.TravauxComponent)
+  },
+
   // (Les autres modules seront ajoutés dans les leçons suivantes)
 
   // Page 404 — route inconnue
