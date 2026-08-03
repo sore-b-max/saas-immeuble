@@ -31,4 +31,12 @@ export class AppartementService {
   chiffreAffairePotentiel = computed(() => 
     this.appartementsState().reduce((total, apt) => total + apt.loyer, 0)
   );
+
+  ajouterAppartement(appartement: Omit<Appartement, 'id'>) {
+    const nouvelApt: Appartement = {
+      ...appartement,
+      id: Math.floor(Math.random() * 1000) + 10 // ID généré aléatoirement pour la démo
+    };
+    this.appartementsState.update(actuels => [nouvelApt, ...actuels]);
+  }
 }
