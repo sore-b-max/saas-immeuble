@@ -1,20 +1,21 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ChargeService } from '../../core/services/charge.service';
 import { Charge, TypeCharge, CleRepartition } from '../../core/models/charge.model';
 import { AppartementService } from '../../core/services/appartement.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp } from '@ng-icons/lucide';
+import { lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp, lucideHome } from '@ng-icons/lucide';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-charges',
   standalone: true,
-  imports: [CommonModule, NgIconComponent, FormsModule],
+  imports: [CommonModule, RouterLink, NgIconComponent, FormsModule],
   templateUrl: './charges.component.html',
   styleUrl: './charges.component.css',
   providers: [
-    provideIcons({ lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp })
+    provideIcons({ lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp, lucideHome })
   ]
 })
 export class ChargesComponent {
