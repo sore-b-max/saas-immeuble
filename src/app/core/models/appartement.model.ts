@@ -10,4 +10,5 @@ export interface Appartement {
   immeubleId: number;
   statut: 'occupe' | 'vacant' | 'en_travaux';
   locataireId?: number;   // Optionnel (vacant si absent)
+  nombreOccupants?: number; // Pour la répartition des charges
 }
