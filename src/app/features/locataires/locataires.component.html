@@ -28,11 +28,11 @@
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <ng-icon name="tablerSearch" class="text-gray-400"></ng-icon>
         </div>
-        <input type="text" placeholder="Rechercher un nom..." class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <input (input)="recherche.set($any($event.target).value)" type="text" placeholder="Rechercher un nom..." class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
       </div>
       <div class="flex gap-2">
         <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-          Actifs : {{ locatairesActifs().length }}
+          Affichés : {{ locatairesFiltres().length }}
         </span>
       </div>
     </div>
@@ -52,8 +52,8 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           
-          <!-- Boucle sur le Signal locatairesActifs() -->
-          @for (locataire of locatairesActifs(); track locataire.id) {
+          <!-- Boucle sur le Signal locatairesFiltres() -->
+          @for (locataire of locatairesFiltres(); track locataire.id) {
             <tr class="hover:bg-blue-50/30 transition-colors">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
@@ -90,10 +90,10 @@
             </tr>
           }
 
-          @if (locatairesActifs().length === 0) {
+          @if (locatairesFiltres().length === 0) {
             <tr>
               <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                Aucun locataire actif trouvé.
+                Aucun locataire ne correspond à votre recherche.
               </td>
             </tr>
           }

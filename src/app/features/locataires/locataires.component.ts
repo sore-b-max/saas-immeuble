@@ -15,11 +15,28 @@ export class LocatairesComponent {
   public locataireService = inject(LocataireService);
 
   // 2. On expose les signaux utiles directement au template (HTML)
-  // Cela permet au HTML de s'abonner aux données et de se mettre à jour tout seul
   locatairesActifs = this.locataireService.locatairesActifs;
   nombreTotal = this.locataireService.nombreTotal;
 
-  // 3. (Optionnel) Une méthode pour archiver depuis la vue
+  // 3. (Leçon 5) Signal pour stocker le texte de recherche
+  recherche = signal('');
+
+  // 4. (Leçon 5) Computed Signal qui filtre la liste en temps réel
+  locatairesFiltres = computed(() => {
+    const terme = this.recherche().toLowerCase().trim();
+    const liste = this.locatairesActifs();
+
+    if (!terme) {
+      return liste; // Si rien n'est tapé, on retourne tout le monde
+    }
+
+    return liste.filter(loc => 
+      loc.nom.toLowerCase().includes(terme) || 
+      loc.prenom.toLowerCase().includes(terme)
+    );
+  });
+
+  // 5. (Optionnel) Une méthode pour archiver depuis la vue
   archiver(id: number) {
     if(confirm('Voulez-vous vraiment archiver ce locataire ?')) {
       this.locataireService.archiverLocataire(id);
