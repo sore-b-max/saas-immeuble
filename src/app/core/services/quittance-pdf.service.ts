@@ -133,24 +133,25 @@ export class QuittancePdfService {
             body: [
               // Header du tableau
               [
-                { text: 'Désignation', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins },
-                { text: 'Mode de règlement', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins, alignment: 'center' },
-                { text: 'Référence / Date', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins, alignment: 'center' },
-                { text: 'Montant', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins, alignment: 'right' }
+                { text: 'Désignation', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, margin: [10, 8, 10, 8] as Margins },
+                { text: 'Mode de règlement', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, margin: [10, 8, 10, 8] as Margins, alignment: 'center' },
+                { text: 'Référence / Date', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, margin: [10, 8, 10, 8] as Margins, alignment: 'center' },
+                { text: 'Montant', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, margin: [10, 8, 10, 8] as Margins, alignment: 'right' }
               ],
               // Ligne de donnée
               [
-                { text: `Loyer mensuel - ${data.periode}`, margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] },
-                { text: data.modePaiement.replace('_', ' ').toUpperCase(), alignment: 'center', margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] },
-                { text: `${data.reference || '-'}\n${this.formatDate(data.datePaiement)}`, alignment: 'center', fontSize: 9, margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] },
-                { text: this.formatMontant(data.montant), alignment: 'right', bold: true, margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] }
+                { text: `Loyer mensuel - ${data.periode}`, margin: [10, 10, 10, 10] as Margins },
+                { text: data.modePaiement.replace('_', ' ').toUpperCase(), alignment: 'center', margin: [10, 10, 10, 10] as Margins },
+                { text: `${data.reference || '-'}\n${this.formatDate(data.datePaiement)}`, alignment: 'center', fontSize: 9, margin: [10, 10, 10, 10] as Margins },
+                { text: this.formatMontant(data.montant), alignment: 'right', bold: true, margin: [10, 10, 10, 10] as Margins }
               ]
             ]
           },
           layout: {
-            hLineWidth: (i, node) => (i === node.table.body.length ? 1 : 0),
-            vLineWidth: () => 0,
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
             hLineColor: () => this.COLOR_BORDER,
+            vLineColor: () => this.COLOR_BORDER,
             paddingLeft: () => 0,
             paddingRight: () => 0
           },
@@ -167,12 +168,17 @@ export class QuittancePdfService {
                 widths: [150, 120],
                 body: [
                   [
-                    { text: 'TOTAL RÉGLÉ', bold: true, color: this.COLOR_PRIMARY, alignment: 'right', margin: [10, 5, 10, 5] as Margins, border: [false, false, false, false] },
-                    { text: this.formatMontant(data.montant), bold: true, color: this.COLOR_ACCENT, fontSize: 14, alignment: 'right', margin: [10, 5, 10, 5] as Margins, border: [false, false, false, false] }
+                    { text: 'TOTAL RÉGLÉ', bold: true, color: this.COLOR_PRIMARY, alignment: 'right', margin: [10, 5, 10, 5] as Margins, border: [true, true, true, true], fillColor: '#F8FAFC' },
+                    { text: this.formatMontant(data.montant), bold: true, color: this.COLOR_ACCENT, fontSize: 14, alignment: 'right', margin: [10, 5, 10, 5] as Margins, border: [true, true, true, true], fillColor: '#F8FAFC' }
                   ]
                 ]
               },
-              layout: 'noBorders'
+              layout: {
+                hLineWidth: () => 1,
+                vLineWidth: () => 1,
+                hLineColor: () => this.COLOR_BORDER,
+                vLineColor: () => this.COLOR_BORDER
+              }
             }
           ],
           margin: [0, 0, 0, 40] as Margins
@@ -220,7 +226,9 @@ export class QuittancePdfService {
    * Formate le montant avec des espaces pour les milliers
    */
   private formatMontant(montant: number): string {
-    return montant.toLocaleString('fr-FR').replace(/,/g, ' ') + ' FCFA';
+    // Utilisation d'une regex pour avoir un espace standard au lieu du toLocaleString qui
+    // peut retourner un espace insécable (non reconnu par pdfmake et affiché comme un carré)
+    return montant.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' FCFA';
   }
 
   /**
