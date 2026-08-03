@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { PaiementService } from '../../core/services/paiement.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-loyers',
@@ -25,6 +26,7 @@ export class LoyersComponent {
   // MODALE ENCAISSEMENT LOYER
   // ==========================================
   private fb = inject(FormBuilder);
+  private toastService = inject(ToastService);
   
   afficherModal = signal(false);
 
@@ -54,5 +56,7 @@ export class LoyersComponent {
 
     this.afficherModal.set(false);
     this.paiementForm.reset();
+
+    this.toastService.showSuccess('Loyer encaissé avec succès !');
   }
 }

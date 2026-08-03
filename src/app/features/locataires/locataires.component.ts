@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { LocataireService } from '../../core/services/locataire.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-locataires',
@@ -49,6 +50,7 @@ export class LocatairesComponent {
   // ==========================================
   
   private fb = inject(FormBuilder);
+  private toastService = inject(ToastService);
 
   // Contrôle l'affichage de la fenêtre modale
   afficherModal = signal(false);
@@ -79,5 +81,8 @@ export class LocatairesComponent {
 
     // 3. On réinitialise le formulaire pour la prochaine fois
     this.locataireForm.reset();
+
+    // 4. Notification
+    this.toastService.showSuccess('Locataire ajouté avec succès !');
   }
 }
