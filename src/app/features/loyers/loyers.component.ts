@@ -5,9 +5,10 @@ import { NgIconComponent } from '@ng-icons/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { PaiementService } from '../../core/services/paiement.service';
 import { ToastService } from '../../core/services/toast.service';
-import { PdfService } from '../../core/services/pdf.service';
+import { QuittancePdfService } from '../../core/services/quittance-pdf.service';
 import { LocataireService } from '../../core/services/locataire.service';
 import { AppartementService } from '../../core/services/appartement.service';
+import { QuittanceData } from '../../core/models/quittance.model';
 
 @Component({
   selector: 'app-loyers',
@@ -33,7 +34,7 @@ export class LoyersComponent {
   
   private locataireService = inject(LocataireService);
   private appartementService = inject(AppartementService);
-  private pdfService = inject(PdfService);
+  private pdfService = inject(QuittancePdfService);
 
   afficherModal = signal(false);
 
@@ -105,7 +106,25 @@ export class LoyersComponent {
     const locataire = locataires.find(l => l.id === paiement.locataireId);
     const appartement = appartements.find(a => a.id === paiement.appartementId);
     
-    this.pdfService.genererQuittance(paiement, locataire, appartement);
+    const data: QuittanceData = {
+      periode: paiement.moisConcerne,
+      datePaiement: paiement.datePaiement || new Date(),
+      modePaiement: paiement.modePaiement,
+      reference: paiement.reference,
+      montant: paiement.montant,
+      bailleur: {
+        nom: 'Gestion SaaS Immeuble',
+        adresse: '01 BP 1234 Ouagadougou 01',
+        telephone: '+226 70 00 00 00'
+      },
+      locataire: {
+        nomComplet: locataire ? `${locataire.prenom} ${locataire.nom}` : `Locataire ID ${paiement.locataireId}`,
+        telephone: locataire?.telephone || 'Non renseigné',
+        appartement: appartement ? `N° ${appartement.numero}` : `ID ${paiement.appartementId}`
+      }
+    };
+    
+    this.pdfService.genererQuittance(data);
     this.toastService.showSuccess('Quittance générée avec succès !');
   }
 }
