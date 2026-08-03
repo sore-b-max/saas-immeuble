@@ -1,12 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import * as pdfMake from 'pdfmake/build/pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
-import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { TDocumentDefinitions, Content, Column, Margins } from 'pdfmake/interfaces';
 import { QuittanceData } from '../models/quittance.model';
-
-// Initialisation de pdfmake avec les polices virtuelles (vfs)
-(pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
 
 @Injectable({
   providedIn: 'root'
@@ -21,14 +16,31 @@ export class QuittancePdfService {
 
   constructor(private datePipe: DatePipe) {}
 
-  genererQuittance(data: QuittanceData) {
+  async genererQuittance(data: QuittanceData) {
+    try {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+      
+      const pdfMakeObj = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts = (pdfFontsModule as any).default || pdfFontsModule;
+      
+      pdfMakeObj.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
+
+      const bailleurStack: Content[] = [
+      { text: 'Bailleur / Gestionnaire', fontSize: 10, bold: true, color: this.COLOR_TEXT_MUTED, margin: [0, 0, 0, 5] },
+      { text: data.bailleur.nom, fontSize: 12, bold: true, color: this.COLOR_PRIMARY },
+      { text: data.bailleur.adresse, fontSize: 10, color: this.COLOR_PRIMARY, margin: [0, 2, 0, 0] },
+      { text: `Tél: ${data.bailleur.telephone}`, fontSize: 10, color: this.COLOR_PRIMARY, margin: [0, 2, 0, 0] }
+    ];
+
+    if (data.bailleur.email) {
+      bailleurStack.push({ text: `Email: ${data.bailleur.email}`, fontSize: 10, color: this.COLOR_PRIMARY, margin: [0, 2, 0, 0] });
+    }
+
     const docDefinition: TDocumentDefinitions = {
       pageSize: 'A4',
-      pageMargins: [40, 60, 40, 60],
+      pageMargins: [40, 60, 40, 60] as Margins,
       
-      // En-tête de page (vide, l'en-tête du doc est dans le corps)
-      header: undefined,
-
       // Pied de page dynamique
       footer: (currentPage, pageCount) => {
         return {
@@ -38,14 +50,14 @@ export class QuittancePdfService {
               alignment: 'left',
               color: this.COLOR_TEXT_MUTED,
               fontSize: 8,
-              margin: [40, 20, 0, 0]
+              margin: [40, 20, 0, 0] as Margins
             },
             {
               text: `Page ${currentPage} sur ${pageCount}`,
               alignment: 'right',
               color: this.COLOR_TEXT_MUTED,
               fontSize: 8,
-              margin: [0, 20, 40, 0]
+              margin: [0, 20, 40, 0] as Margins
             }
           ]
         };
@@ -75,18 +87,18 @@ export class QuittancePdfService {
                   fontSize: 12,
                   color: this.COLOR_TEXT_MUTED,
                   alignment: 'right',
-                  margin: [0, 4, 0, 0]
+                  margin: [0, 4, 0, 0] as Margins
                 }
               ]
             }
           ],
-          margin: [0, 0, 0, 40]
+          margin: [0, 0, 0, 40] as Margins
         },
 
         // Ligne de séparation
         {
           canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1, lineColor: this.COLOR_BORDER }],
-          margin: [0, 0, 0, 20]
+          margin: [0, 0, 0, 20] as Margins
         },
 
         // 2. BLOCS D'INFORMATIONS (BAILLEUR / LOCATAIRE)
@@ -95,13 +107,7 @@ export class QuittancePdfService {
             // Colonne Bailleur
             {
               width: '50%',
-              stack: [
-                { text: 'Bailleur / Gestionnaire', fontSize: 10, bold: true, color: this.COLOR_TEXT_MUTED, margin: [0, 0, 0, 5] },
-                { text: data.bailleur.nom, fontSize: 12, bold: true, color: this.COLOR_PRIMARY },
-                { text: data.bailleur.adresse, fontSize: 10, color: this.COLOR_PRIMARY, margin: [0, 2, 0, 0] },
-                { text: `Tél: ${data.bailleur.telephone}`, fontSize: 10, color: this.COLOR_PRIMARY, margin: [0, 2, 0, 0] },
-                data.bailleur.email ? { text: `Email: ${data.bailleur.email}`, fontSize: 10, color: this.COLOR_PRIMARY, margin: [0, 2, 0, 0] } : {}
-              ]
+              stack: bailleurStack
             },
             // Colonne Locataire
             {
@@ -114,7 +120,7 @@ export class QuittancePdfService {
               ]
             }
           ],
-          margin: [0, 0, 0, 30]
+          margin: [0, 0, 0, 30] as Margins
         },
 
         // 3. TABLEAU DES PRESTATIONS
@@ -125,28 +131,28 @@ export class QuittancePdfService {
             body: [
               // Header du tableau
               [
-                { text: 'Désignation', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] },
-                { text: 'Mode de règlement', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5], alignment: 'center' },
-                { text: 'Référence / Date', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5], alignment: 'center' },
-                { text: 'Montant', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5], alignment: 'right' }
+                { text: 'Désignation', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins },
+                { text: 'Mode de règlement', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins, alignment: 'center' },
+                { text: 'Référence / Date', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins, alignment: 'center' },
+                { text: 'Montant', bold: true, color: '#FFFFFF', fillColor: this.COLOR_ACCENT, border: [false, false, false, false], margin: [10, 5, 10, 5] as Margins, alignment: 'right' }
               ],
               // Ligne de donnée
               [
-                { text: `Loyer mensuel - ${data.periode}`, margin: [10, 10, 10, 10], border: [false, false, false, true] },
-                { text: data.modePaiement.replace('_', ' ').toUpperCase(), alignment: 'center', margin: [10, 10, 10, 10], border: [false, false, false, true] },
-                { text: `${data.reference || '-'}\n${this.formatDate(data.datePaiement)}`, alignment: 'center', fontSize: 9, margin: [10, 10, 10, 10], border: [false, false, false, true] },
-                { text: this.formatMontant(data.montant), alignment: 'right', bold: true, margin: [10, 10, 10, 10], border: [false, false, false, true] }
+                { text: `Loyer mensuel - ${data.periode}`, margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] },
+                { text: data.modePaiement.replace('_', ' ').toUpperCase(), alignment: 'center', margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] },
+                { text: `${data.reference || '-'}\n${this.formatDate(data.datePaiement)}`, alignment: 'center', fontSize: 9, margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] },
+                { text: this.formatMontant(data.montant), alignment: 'right', bold: true, margin: [10, 10, 10, 10] as Margins, border: [false, false, false, true] }
               ]
             ]
           },
           layout: {
-            hLineWidth: (i, node) => i === node.table.body.length ? 1 : 0,
+            hLineWidth: (i, node) => (i === node.table.body.length ? 1 : 0),
             vLineWidth: () => 0,
             hLineColor: () => this.COLOR_BORDER,
             paddingLeft: () => 0,
             paddingRight: () => 0
           },
-          margin: [0, 0, 0, 20]
+          margin: [0, 0, 0, 20] as Margins
         },
 
         // TOTAL HIGHLIGHT
@@ -159,15 +165,15 @@ export class QuittancePdfService {
                 widths: [150, 120],
                 body: [
                   [
-                    { text: 'TOTAL RÉGLÉ', bold: true, color: this.COLOR_PRIMARY, alignment: 'right', margin: [10, 5, 10, 5], border: [false, false, false, false] },
-                    { text: this.formatMontant(data.montant), bold: true, color: this.COLOR_ACCENT, fontSize: 14, alignment: 'right', margin: [10, 5, 10, 5], border: [false, false, false, false] }
+                    { text: 'TOTAL RÉGLÉ', bold: true, color: this.COLOR_PRIMARY, alignment: 'right', margin: [10, 5, 10, 5] as Margins, border: [false, false, false, false] },
+                    { text: this.formatMontant(data.montant), bold: true, color: this.COLOR_ACCENT, fontSize: 14, alignment: 'right', margin: [10, 5, 10, 5] as Margins, border: [false, false, false, false] }
                   ]
                 ]
               },
               layout: 'noBorders'
             }
           ],
-          margin: [0, 0, 0, 40]
+          margin: [0, 0, 0, 40] as Margins
         },
 
         // 4. ATTESTATION LÉGALE
@@ -176,7 +182,7 @@ export class QuittancePdfService {
           fontSize: 10,
           color: this.COLOR_TEXT_MUTED,
           lineHeight: 1.5,
-          margin: [0, 0, 0, 40]
+          margin: [0, 0, 0, 40] as Margins
         },
 
         // 5. CACHET & SIGNATURE
@@ -187,7 +193,7 @@ export class QuittancePdfService {
               width: 200,
               stack: [
                 { text: 'Le Gestionnaire', alignment: 'center', bold: true, color: this.COLOR_PRIMARY },
-                { text: '(Cachet et Signature)', alignment: 'center', fontSize: 9, color: this.COLOR_TEXT_MUTED, margin: [0, 5, 0, 50] },
+                { text: '(Cachet et Signature)', alignment: 'center', fontSize: 9, color: this.COLOR_TEXT_MUTED, margin: [0, 5, 0, 50] as Margins },
                 { canvas: [{ type: 'line', x1: 20, y1: 0, x2: 180, y2: 0, lineWidth: 1, lineColor: this.COLOR_BORDER }] }
               ]
             }
@@ -201,7 +207,11 @@ export class QuittancePdfService {
     };
 
     // Génération et téléchargement
-    pdfMake.createPdf(docDefinition).download(`Quittance_${data.periode}_Locataire_${data.locataire.nomComplet.replace(' ', '_')}.pdf`);
+    pdfMakeObj.createPdf(docDefinition).download(`Quittance_${data.periode}_Locataire_${data.locataire.nomComplet.replace(/ /g, '_')}.pdf`);
+    
+    } catch (error) {
+      console.error("Erreur lors de la génération du PDF", error);
+    }
   }
 
   /**
@@ -221,12 +231,12 @@ export class QuittancePdfService {
   /**
    * Retourne l'objet colonne pour le logo (Image ou Texte)
    */
-  private getLogoColumn(logoBase64?: string, nomBailleur?: string) {
+  private getLogoColumn(logoBase64?: string, nomBailleur?: string): Column {
     if (logoBase64) {
       return {
         width: 120,
         image: logoBase64,
-        fit: [120, 60]
+        fit: [120, 60] as [number, number]
       };
     } else {
       return {
@@ -235,7 +245,7 @@ export class QuittancePdfService {
         fontSize: 16,
         bold: true,
         color: this.COLOR_PRIMARY,
-        margin: [0, 5, 0, 0]
+        margin: [0, 5, 0, 0] as Margins
       };
     }
   }
