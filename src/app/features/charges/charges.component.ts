@@ -36,7 +36,7 @@ export class ChargesComponent {
     typeCharge: 'eau' as TypeCharge,
     libelle: '',
     montantTotal: 0,
-    periodeFacture: '',
+    periodeFacture: new Date().toISOString().substring(0, 7), // Format YYYY-MM
     dateFacture: new Date().toISOString().split('T')[0],
     modeRepartition: 'egal' as CleRepartition,
     immeubleId: 1
@@ -106,7 +106,7 @@ export class ChargesComponent {
       typeCharge: 'eau',
       libelle: '',
       montantTotal: 0,
-      periodeFacture: '',
+      periodeFacture: new Date().toISOString().substring(0, 7),
       dateFacture: new Date().toISOString().split('T')[0],
       modeRepartition: 'egal',
       immeubleId: 1

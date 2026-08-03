@@ -99,78 +99,90 @@
 </div>
 
 <!-- Modale Nouvelle Facture -->
-<div *ngIf="showModale()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-      <h2 class="text-lg font-bold text-gray-800">Saisir une nouvelle facture globale</h2>
-      <button (click)="fermerModale()" class="text-gray-400 hover:text-gray-600 transition-colors">
+<div *ngIf="showModale()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+    <!-- En-tête Modale -->
+    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+      <h2 class="text-lg font-bold text-gray-800">Saisir une nouvelle facture</h2>
+      <button (click)="fermerModale()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
         <ng-icon name="lucidePlus" class="rotate-45" size="20px"></ng-icon>
       </button>
     </div>
     
-    <div class="p-6 space-y-4">
+    <!-- Corps Modale -->
+    <div class="p-6 space-y-5 overflow-y-auto">
       
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-5">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Type de charge</label>
-          <select [(ngModel)]="nouvelleFacture().typeCharge" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Type de charge *</label>
+          <select [(ngModel)]="nouvelleFacture().typeCharge" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
             <option value="eau">Eau (ONEA)</option>
             <option value="electricite">Électricité (SONABEL)</option>
             <option value="gardiennage">Gardiennage</option>
             <option value="entretien">Entretien</option>
-            <option value="autre">Autre</option>
+            <option value="autre">Autre charge</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Période (Mois)</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Période concernée *</label>
           <input type="month" [(ngModel)]="nouvelleFacture().periodeFacture" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Montant Total de la facture (FCFA)</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Montant Total (FCFA) *</label>
         <div class="relative">
-          <input type="number" [(ngModel)]="nouvelleFacture().montantTotal" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-lg" placeholder="ex: 50000">
-          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <span class="text-gray-500 sm:text-sm">FCFA</span>
+          <input type="number" [(ngModel)]="nouvelleFacture().montantTotal" min="0" class="w-full pl-3 pr-16 py-2.5 border border-gray-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" placeholder="ex: 50000">
+          <div class="absolute inset-y-0 right-0 flex items-center bg-gray-50 border-l border-gray-200 rounded-r-lg px-3">
+            <span class="text-gray-500 font-medium text-sm">FCFA</span>
           </div>
         </div>
       </div>
 
-      <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
-        <label class="block text-sm font-bold text-gray-800 mb-2">Clé de répartition</label>
+      <div class="mt-2">
+        <label class="block text-sm font-bold text-gray-800 mb-3">Clé de répartition (Comment diviser la facture ?)</label>
         
-        <div class="space-y-2">
-          <label class="flex items-start p-2 rounded cursor-pointer hover:bg-white transition-colors">
-            <input type="radio" name="repartition" value="egal" [(ngModel)]="nouvelleFacture().modeRepartition" class="form-radio text-blue-600 focus:ring-blue-500 mt-1">
-            <div class="ml-3">
-              <span class="block text-sm font-medium text-gray-700">Parts égales</span>
-              <span class="block text-xs text-gray-500">Divise le montant de façon égale entre les appartements occupés.</span>
+        <div class="space-y-3">
+          <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50/50 transition-colors" [ngClass]="{'bg-blue-50/30 border-blue-200': nouvelleFacture().modeRepartition === 'egal'}">
+            <div class="flex items-center h-5">
+              <input type="radio" name="repartition" value="egal" [(ngModel)]="nouvelleFacture().modeRepartition" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+            </div>
+            <div class="ml-3 flex-1">
+              <span class="block text-sm font-semibold" [ngClass]="nouvelleFacture().modeRepartition === 'egal' ? 'text-blue-800' : 'text-gray-700'">À parts égales</span>
+              <span class="block text-xs text-gray-500 mt-0.5">Le montant sera divisé de façon égale entre tous les appartements occupés.</span>
             </div>
           </label>
           
-          <label class="flex items-start p-2 rounded cursor-pointer hover:bg-white transition-colors">
-            <input type="radio" name="repartition" value="superficie" [(ngModel)]="nouvelleFacture().modeRepartition" class="form-radio text-blue-600 focus:ring-blue-500 mt-1">
-            <div class="ml-3">
-              <span class="block text-sm font-medium text-gray-700">Prorata de la superficie</span>
-              <span class="block text-xs text-gray-500">Les grands appartements paient plus cher (équitable pour l'entretien/gardiennage).</span>
+          <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50/50 transition-colors" [ngClass]="{'bg-blue-50/30 border-blue-200': nouvelleFacture().modeRepartition === 'superficie'}">
+            <div class="flex items-center h-5">
+              <input type="radio" name="repartition" value="superficie" [(ngModel)]="nouvelleFacture().modeRepartition" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+            </div>
+            <div class="ml-3 flex-1">
+              <span class="block text-sm font-semibold" [ngClass]="nouvelleFacture().modeRepartition === 'superficie' ? 'text-blue-800' : 'text-gray-700'">Au prorata de la superficie</span>
+              <span class="block text-xs text-gray-500 mt-0.5">Les plus grands appartements paient une part plus importante (idéal pour l'entretien).</span>
             </div>
           </label>
 
-          <label class="flex items-start p-2 rounded cursor-pointer hover:bg-white transition-colors">
-            <input type="radio" name="repartition" value="occupants" [(ngModel)]="nouvelleFacture().modeRepartition" class="form-radio text-blue-600 focus:ring-blue-500 mt-1">
-            <div class="ml-3">
-              <span class="block text-sm font-medium text-gray-700">Nombre d'occupants</span>
-              <span class="block text-xs text-gray-500">Recommandé pour les factures d'eau communes.</span>
+          <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50/50 transition-colors" [ngClass]="{'bg-blue-50/30 border-blue-200': nouvelleFacture().modeRepartition === 'occupants'}">
+            <div class="flex items-center h-5">
+              <input type="radio" name="repartition" value="occupants" [(ngModel)]="nouvelleFacture().modeRepartition" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+            </div>
+            <div class="ml-3 flex-1">
+              <span class="block text-sm font-semibold" [ngClass]="nouvelleFacture().modeRepartition === 'occupants' ? 'text-blue-800' : 'text-gray-700'">Au nombre d'occupants</span>
+              <span class="block text-xs text-gray-500 mt-0.5">La part dépend du nombre de personnes logeant dans l'appartement (idéal pour l'eau).</span>
             </div>
           </label>
         </div>
       </div>
     </div>
     
-    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 mt-2">
-      <button (click)="fermerModale()" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors">Annuler</button>
-      <button (click)="soumettreFacture()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">Valider et Répartir</button>
+    <!-- Pied Modale -->
+    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/80">
+      <button type="button" (click)="fermerModale()" class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors shadow-sm">Annuler</button>
+      <button type="button" (click)="soumettreFacture()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+        <ng-icon name="lucideCheckCircle" size="18px"></ng-icon>
+        Valider et Répartir
+      </button>
     </div>
   </div>
 </div>
