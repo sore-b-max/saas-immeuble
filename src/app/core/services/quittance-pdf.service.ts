@@ -14,7 +14,9 @@ export class QuittancePdfService {
   private readonly COLOR_TEXT_MUTED = '#64748B'; // Gris (métadonnées)
   private readonly COLOR_BORDER = '#E2E8F0';
 
-  constructor(private datePipe: DatePipe) {}
+  private datePipe = new DatePipe('en-US');
+
+  constructor() {}
 
   async genererQuittance(data: QuittanceData) {
     try {
