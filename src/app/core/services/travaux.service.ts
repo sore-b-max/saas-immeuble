@@ -1,12 +1,15 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Travaux } from '../models/travaux.model';
+import { simulateApiCall } from '../utils/api-delay.util';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TravauxService {
   // Liste des travaux (données simulées pour le MVP)
-  private travauxState = signal<Travaux[]>([
+  private travauxState = signal<Travaux[]>([]);
+
+  private mockDatabase: Travaux[] = [
     {
       id: 1,
       titre: 'Fuite robinet salle de bain',
@@ -36,7 +39,12 @@ export class TravauxService {
       dateSignalement: new Date('2026-08-02T08:00:00'),
       statut: 'en_cours'
     }
-  ]);
+  ];
+
+  async fetchTravaux(): Promise<void> {
+    await simulateApiCall(1500);
+    this.travauxState.set([...this.mockDatabase]);
+  }
 
   // Signaux publics en lecture seule
   public readonly travaux = this.travauxState.asReadonly();
@@ -55,7 +63,8 @@ export class TravauxService {
   /**
    * Ajouter un nouveau travail / intervention
    */
-  ajouterTravail(travail: Omit<Travaux, 'id' | 'statut' | 'dateSignalement'>) {
+  async ajouterTravail(travail: Omit<Travaux, 'id' | 'statut' | 'dateSignalement'>) {
+    await simulateApiCall(800);
     const nouveauTravail: Travaux = {
       ...travail,
       id: this.travauxState().length > 0 ? Math.max(...this.travauxState().map(t => t.id)) + 1 : 1,
@@ -69,7 +78,8 @@ export class TravauxService {
   /**
    * Mettre à jour le statut d'un travail
    */
-  changerStatut(id: number, nouveauStatut: 'signale' | 'en_cours' | 'termine') {
+  async changerStatut(id: number, nouveauStatut: 'signale' | 'en_cours' | 'termine') {
+    await simulateApiCall(800);
     this.travauxState.update(travaux => 
       travaux.map(t => {
         if (t.id === id) {
@@ -87,13 +97,34 @@ export class TravauxService {
   /**
    * Ajouter une photo (simulée via base64 ou URL) à un travail
    */
-  ajouterPhoto(id: number, photoUrl: string) {
+  async ajouterPhoto(id: number, photoUrl: string) {
+    await simulateApiCall(800);
     this.travauxState.update(travaux => 
       travaux.map(t => {
         if (t.id === id) {
           return {
             ...t,
             photos: t.photos ? [...t.photos, photoUrl] : [photoUrl]
+          };
+        }
+        return t;
+      })
+    );
+  }
+
+  /**
+   * Supprimer une photo d'un travail
+   */
+  async supprimerPhoto(id: number, index: number) {
+    await simulateApiCall(400);
+    this.travauxState.update(travaux => 
+      travaux.map(t => {
+        if (t.id === id && t.photos) {
+          const newPhotos = [...t.photos];
+          newPhotos.splice(index, 1);
+          return {
+            ...t,
+            photos: newPhotos
           };
         }
         return t;

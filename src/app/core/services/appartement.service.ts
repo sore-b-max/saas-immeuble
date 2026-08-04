@@ -1,18 +1,27 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Appartement } from '../models/appartement.model';
+import { simulateApiCall } from '../utils/api-delay.util';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AppartementService {
   
-  // 1. Les données brutes (Le Signal principal)
-  private appartementsState = signal<Appartement[]>([
+  // 1. Les données brutes (Le Signal principal, initialement vide)
+  private appartementsState = signal<Appartement[]>([]);
+
+  // Simulation de la base de données
+  private mockDatabase: Appartement[] = [
     { id: 1, numero: '101', superficie: 50, loyer: 150000, immeubleId: 1, statut: 'occupe', locataireId: 1, nombreOccupants: 2 },
     { id: 2, numero: '102', superficie: 65, loyer: 200000, immeubleId: 1, statut: 'occupe', locataireId: 2, nombreOccupants: 3 },
     { id: 3, numero: '201', superficie: 45, loyer: 130000, immeubleId: 1, statut: 'vacant', nombreOccupants: 0 },
     { id: 4, numero: '202', superficie: 80, loyer: 250000, immeubleId: 1, statut: 'en_travaux', nombreOccupants: 0 }
-  ]);
+  ];
+
+  async fetchAppartements(): Promise<void> {
+    await simulateApiCall(1500); // Simule 1.5s de latence réseau
+    this.appartementsState.set([...this.mockDatabase]);
+  }
 
   // 2. Ce qu'on expose publiquement (en lecture seule)
   appartements = this.appartementsState.asReadonly();
@@ -32,7 +41,8 @@ export class AppartementService {
     this.appartementsState().reduce((total, apt) => total + apt.loyer, 0)
   );
 
-  ajouterAppartement(appartement: Omit<Appartement, 'id'>) {
+  async ajouterAppartement(appartement: Omit<Appartement, 'id'>) {
+    await simulateApiCall(800);
     const nouvelApt: Appartement = {
       ...appartement,
       id: Math.floor(Math.random() * 1000) + 10 // ID généré aléatoirement pour la démo
@@ -40,7 +50,8 @@ export class AppartementService {
     this.appartementsState.update(actuels => [nouvelApt, ...actuels]);
   }
 
-  modifierAppartement(id: number, appartementModifie: Partial<Appartement>) {
+  async modifierAppartement(id: number, appartementModifie: Partial<Appartement>) {
+    await simulateApiCall(800);
     this.appartementsState.update(actuels => 
       actuels.map(apt => 
         apt.id === id ? { ...apt, ...appartementModifie } : apt

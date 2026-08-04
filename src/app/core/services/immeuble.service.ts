@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Immeuble } from '../models/immeuble.model';
+import { simulateApiCall } from '../utils/api-delay.util';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,11 @@ export class ImmeubleService {
   });
 
   public readonly immeuble = this.immeubleState.asReadonly();
+
+  async fetchImmeuble() {
+    await simulateApiCall(1000);
+    // Simuler le chargement depuis le backend
+  }
 
   constructor() {
     // Si on avait un localstorage pour le MVP, on pourrait le charger ici

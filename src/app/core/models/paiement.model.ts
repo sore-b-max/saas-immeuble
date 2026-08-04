@@ -12,4 +12,5 @@ export interface Paiement {
   modePaiement: 'orange_money' | 'moov_money' | 'especes' | 'virement';
   statut: 'paye' | 'en_attente' | 'en_retard' | 'impaye';
   reference?: string;     // Référence transaction mobile money
+  rappelEnvoye?: boolean; // Indique si un rappel a été envoyé au locataire
 }

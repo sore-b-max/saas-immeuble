@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Charge, ChargeRepartition } from '../models/charge.model';
 import { AppartementService } from './appartement.service';
+import { simulateApiCall } from '../utils/api-delay.util';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,9 @@ export class ChargeService {
   private appartementService = inject(AppartementService);
 
   // 1. Les données brutes (Le Signal principal)
-  private chargesState = signal<Charge[]>([
+  private chargesState = signal<Charge[]>([]);
+
+  private mockDatabase: Charge[] = [
     {
       id: 1,
       immeubleId: 1,
@@ -37,14 +40,20 @@ export class ChargeService {
         { appartementId: 2, montant: 28261, statut: 'en_attente' }  // (65/115) * 50000
       ]
     }
-  ]);
+  ];
+
+  async fetchCharges(): Promise<void> {
+    await simulateApiCall(1500);
+    this.chargesState.set([...this.mockDatabase]);
+  }
 
   // 2. Ce qu'on expose publiquement
   charges = this.chargesState.asReadonly();
 
   // 3. Méthodes de service
   
-  ajouterCharge(charge: Omit<Charge, 'id' | 'repartitions'>) {
+  async ajouterCharge(charge: Omit<Charge, 'id' | 'repartitions'>) {
+    await simulateApiCall(800);
     // Calculer automatiquement les répartitions avant d'ajouter
     const repartitions = this.calculerRepartition(charge.immeubleId, charge.montantTotal, charge.modeRepartition);
     
@@ -113,7 +122,8 @@ export class ChargeService {
     return repartitions;
   }
 
-  marquerPaye(chargeId: number, appartementId: number) {
+  async marquerPaye(chargeId: number, appartementId: number) {
+    await simulateApiCall(800);
     this.chargesState.update(actuels => 
       actuels.map(charge => {
         if (charge.id !== chargeId) return charge;

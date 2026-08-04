@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
@@ -12,8 +12,12 @@ import { ToastService } from '../../core/services/toast.service';
   imports: [CommonModule, RouterLink, NgIconComponent, ReactiveFormsModule],
   templateUrl: './appartements.component.html'
 })
-export class AppartementsComponent {
+export class AppartementsComponent implements OnInit {
   public appartementService = inject(AppartementService);
+
+  // Signaux d'état
+  isLoading = signal(true);
+  isSubmitting = signal(false);
 
   // On expose les signaux au HTML
   appartements = this.appartementService.appartements;
@@ -39,6 +43,17 @@ export class AppartementsComponent {
     statut: ['vacant', Validators.required]
   });
 
+  async ngOnInit() {
+    try {
+      this.isLoading.set(true);
+      await this.appartementService.fetchAppartements();
+    } catch (err) {
+      this.toastService.showError("Erreur lors du chargement des appartements");
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
   ouvrirModale(apt?: any) {
     if (apt) {
       this.appartementEnEdition.set(apt.id);
@@ -55,33 +70,41 @@ export class AppartementsComponent {
     this.afficherModal.set(true);
   }
 
-  enregistrerAppartement() {
+  async enregistrerAppartement() {
     if (this.appartementForm.invalid) return;
 
-    const formValue = this.appartementForm.getRawValue();
-    const aptId = this.appartementEnEdition();
+    this.isSubmitting.set(true);
+    
+    try {
+      const formValue = this.appartementForm.getRawValue();
+      const aptId = this.appartementEnEdition();
 
-    if (aptId) {
-      this.appartementService.modifierAppartement(aptId, {
-        numero: formValue.numero,
-        superficie: formValue.superficie,
-        loyer: formValue.loyer,
-        statut: formValue.statut as any
-      });
-      this.toastService.showSuccess('Appartement modifié avec succès !');
-    } else {
-      this.appartementService.ajouterAppartement({
-        numero: formValue.numero,
-        superficie: formValue.superficie,
-        loyer: formValue.loyer,
-        statut: formValue.statut as any,
-        immeubleId: 1 // Valeur par défaut pour l'instant
-      });
-      this.toastService.showSuccess('Appartement ajouté avec succès !');
+      if (aptId) {
+        await this.appartementService.modifierAppartement(aptId, {
+          numero: formValue.numero,
+          superficie: formValue.superficie,
+          loyer: formValue.loyer,
+          statut: formValue.statut as any
+        });
+        this.toastService.showSuccess('Appartement modifié avec succès !');
+      } else {
+        await this.appartementService.ajouterAppartement({
+          numero: formValue.numero,
+          superficie: formValue.superficie,
+          loyer: formValue.loyer,
+          statut: formValue.statut as any,
+          immeubleId: 1 // Valeur par défaut pour l'instant
+        });
+        this.toastService.showSuccess('Appartement ajouté avec succès !');
+      }
+
+      this.afficherModal.set(false);
+      this.appartementEnEdition.set(null);
+      this.appartementForm.reset({ statut: 'vacant' });
+    } catch (e) {
+      this.toastService.showError("Une erreur s'est produite.");
+    } finally {
+      this.isSubmitting.set(false);
     }
-
-    this.afficherModal.set(false);
-    this.appartementEnEdition.set(null);
-    this.appartementForm.reset({ statut: 'vacant' });
   }
 }

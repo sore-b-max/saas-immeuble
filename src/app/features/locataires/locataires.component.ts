@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
@@ -12,9 +12,12 @@ import { ToastService } from '../../core/services/toast.service';
   imports: [CommonModule, RouterLink, NgIconComponent, ReactiveFormsModule],
   templateUrl: './locataires.component.html'
 })
-export class LocatairesComponent {
+export class LocatairesComponent implements OnInit {
   // 1. On injecte le service pour accéder aux données
   public locataireService = inject(LocataireService);
+
+  // État de chargement initial
+  isFetchingData = signal(true);
 
   // 2. On expose les signaux utiles directement au template (HTML)
   locatairesActifs = this.locataireService.locatairesActifs;
@@ -37,6 +40,17 @@ export class LocatairesComponent {
       loc.prenom.toLowerCase().includes(terme)
     );
   });
+
+  async ngOnInit() {
+    try {
+      this.isFetchingData.set(true);
+      await this.locataireService.fetchLocataires();
+    } catch (err) {
+      this.toastService.showError("Erreur lors du chargement des locataires");
+    } finally {
+      this.isFetchingData.set(false);
+    }
+  }
 
   // 5. (Optionnel) Une méthode pour archiver depuis la vue
   archiver(id: number) {
@@ -86,32 +100,40 @@ export class LocatairesComponent {
     this.afficherModal.set(true);
   }
 
-  sauvegarderLocataire() {
+  // État de soumission
+  isSubmitting = signal(false);
+
+  async sauvegarderLocataire() {
     if (this.locataireForm.invalid) {
       return;
     }
 
+    this.isSubmitting.set(true);
     const locataireId = this.locataireEnEdition();
 
-    if (locataireId) {
-      // 1. Modification
-      this.locataireService.modifierLocataire(locataireId, this.locataireForm.getRawValue());
-      this.toastService.showSuccess('Locataire modifié avec succès !');
-    } else {
-      // 1. Ajout
-      this.locataireService.ajouterLocataire({
-        ...this.locataireForm.getRawValue(),
-        dateEntree: new Date(),
-        estActif: true
-      });
-      this.toastService.showSuccess('Locataire ajouté avec succès !');
+    try {
+      if (locataireId) {
+        // 1. Modification
+        await this.locataireService.modifierLocataire(locataireId, this.locataireForm.getRawValue());
+        this.toastService.showSuccess('Locataire modifié avec succès !');
+      } else {
+        // 1. Ajout
+        await this.locataireService.ajouterLocataire({
+          ...this.locataireForm.getRawValue(),
+          dateEntree: new Date(),
+          estActif: true
+        });
+        this.toastService.showSuccess('Locataire ajouté avec succès !');
+      }
+
+      // 2. On referme la modale
+      this.afficherModal.set(false);
+
+      // 3. On réinitialise
+      this.locataireEnEdition.set(null);
+      this.locataireForm.reset();
+    } finally {
+      this.isSubmitting.set(false);
     }
-
-    // 2. On referme la modale
-    this.afficherModal.set(false);
-
-    // 3. On réinitialise
-    this.locataireEnEdition.set(null);
-    this.locataireForm.reset();
   }
 }

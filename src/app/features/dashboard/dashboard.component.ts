@@ -1,53 +1,100 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { NgIconComponent } from '@ng-icons/core';
-
-// =====================================================
-// COMPOSANT : Dashboard (Tableau de bord propriétaire)
-// Ce que le propriétaire voit en arrivant sur l'app
-// =====================================================
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
+import { lucideBuilding, lucideHome, lucideUsers, lucidePieChart, lucideBanknote, lucideCheckCircle, lucideClock, lucideAlertCircle, lucideRocket, lucideFileText, lucideZap, lucideWrench, lucideSettings, lucideAlertTriangle, lucideUserPlus, lucideDownload, lucideTrendingUp, lucideTrendingDown } from '@ng-icons/lucide';
+import { ToastService } from '../../core/services/toast.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent],
+  imports: [CommonModule, RouterLink, NgIconComponent, BaseChartDirective],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrl: './dashboard.component.css',
+  providers: [provideIcons({ lucideBuilding, lucideHome, lucideUsers, lucidePieChart, lucideBanknote, lucideCheckCircle, lucideClock, lucideAlertCircle, lucideRocket, lucideFileText, lucideZap, lucideWrench, lucideSettings, lucideAlertTriangle, lucideUserPlus, lucideDownload, lucideTrendingUp, lucideTrendingDown })]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
+  private toastService = inject(ToastService);
+  private dashboardService = inject(DashboardService);
 
-  // --- DONNÉES SIMULÉES (on les remplacera par l'API Spring Boot plus tard) ---
+  isLoading = signal<boolean>(true);
+  
+  // On récupère le signal de données du service
+  dashboardData = this.dashboardService.dashboardState;
 
-  // Signals : données réactives (écran mis à jour automatiquement)
-  totalImmeubles    = signal(3);
-  totalAppartements = signal(24);
-  totalLocataires   = signal(20);
+  // On crée un signal calculé pour la configuration du graphe 
+  // car Chart.js a besoin d'objets spécifiques qui se mettent à jour.
+  lineChartData = computed<ChartConfiguration<'line'>['data']>(() => {
+    const data = this.dashboardData();
+    if (!data) return { labels: [], datasets: [] };
 
-  // Loyers du mois en cours
-  loyersPayes      = signal(15);
-  loyersEnAttente  = signal(3);
-  loyersEnRetard   = signal(2);
+    return {
+      labels: data.chartData.labels,
+      datasets: [
+        {
+          data: data.chartData.data,
+          label: 'Revenus nets (FCFA)',
+          fill: true,
+          tension: 0.4,
+          borderColor: '#4f46e5', // indigo-600
+          backgroundColor: 'rgba(79, 70, 229, 0.1)',
+          pointBackgroundColor: '#4f46e5',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#4f46e5',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }
+      ]
+    };
+  });
+  
+  public lineChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+        titleFont: { family: 'Inter', size: 13 },
+        bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+        padding: 12,
+        cornerRadius: 8,
+        displayColors: false
+      }
+    },
+    scales: {
+      x: { 
+        grid: { display: false },
+        ticks: { font: { family: 'Inter' }, color: '#6b7280' }
+      },
+      y: { 
+        grid: { color: '#f3f4f6' }, // gray-100
+        border: { display: false },
+        ticks: { font: { family: 'Inter' }, color: '#6b7280' }
+      }
+    },
+    interaction: { mode: 'nearest', axis: 'x', intersect: false }
+  };
 
-  // Finances
-  revenuMensuel    = signal(2_850_000);   // En FCFA
-  depensesTravaux  = signal(450_000);
+  async ngOnInit() {
+    try {
+      this.isLoading.set(true);
+      await this.dashboardService.fetchDashboardData();
+    } catch (err) {
+      this.toastService.showError("Erreur lors du chargement du tableau de bord");
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
 
-  // Computed : calculé automatiquement depuis les signals
-  tauxOccupation = computed(() =>
-    Math.round((this.totalLocataires() / this.totalAppartements()) * 100)
-  );
-
-  revenuNet = computed(() =>
-    this.revenuMensuel() - this.depensesTravaux()
-  );
-
-  // Dernières activités
-  activitesRecentes = signal([
-    { icone: 'lucideBanknote', texte: 'Loyer payé — Apt B3 (Koné Mamadou)', temps: 'Il y a 2h', type: 'succes' },
-    { icone: 'lucideAlertTriangle', texte: 'Retard de loyer — Apt A1 (Ouédraogo Fatima)', temps: 'Il y a 5h', type: 'alerte' },
-    { icone: 'lucideWrench', texte: 'Travaux terminés — Apt C2 (Fuite eau)', temps: 'Hier', type: 'info' },
-    { icone: 'lucideZap', texte: 'Facture électricité saisie — Immeuble 1', temps: 'Hier', type: 'info' },
-    { icone: 'lucideUserPlus', texte: 'Nouveau locataire — Apt D4 (Traoré Jean)', temps: 'Il y a 2j', type: 'succes' },
-  ]);
+  exporterRapport() {
+    this.toastService.showSuccess('Rapport CSV téléchargé avec succès !');
+  }
 }

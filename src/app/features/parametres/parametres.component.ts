@@ -1,10 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { 
-  lucideSettings, lucideHome, lucideUpload, lucideSave, lucideImage, lucideTrash2 
+  lucideSettings, lucideHome, lucideUpload, lucideSave, lucideImage, lucideTrash2, lucideLoader2
 } from '@ng-icons/lucide';
 import { ImmeubleService } from '../../core/services/immeuble.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -16,13 +16,16 @@ import { ToastService } from '../../core/services/toast.service';
   templateUrl: './parametres.component.html',
   providers: [
     provideIcons({ 
-      lucideSettings, lucideHome, lucideUpload, lucideSave, lucideImage, lucideTrash2
+      lucideSettings, lucideHome, lucideUpload, lucideSave, lucideImage, lucideTrash2, lucideLoader2
     })
   ]
 })
 export class ParametresComponent implements OnInit {
   immeubleService = inject(ImmeubleService);
   toastService = inject(ToastService);
+
+  isFetchingData = signal(true);
+  isSubmitting = signal(false);
 
   // Formulaire local
   form = {
@@ -35,18 +38,27 @@ export class ParametresComponent implements OnInit {
     logoUrl: ''
   };
 
-  ngOnInit() {
-    // Initialiser le formulaire avec les données actuelles
-    const infos = this.immeubleService.immeuble();
-    this.form = {
-      nom: infos.nom || '',
-      adresse: infos.adresse || '',
-      ville: infos.ville || '',
-      nomProprietaire: infos.nomProprietaire || '',
-      telephone: infos.telephone || '',
-      devise: infos.devise || 'FCFA',
-      logoUrl: infos.logoUrl || ''
-    };
+  async ngOnInit() {
+    try {
+      this.isFetchingData.set(true);
+      await this.immeubleService.fetchImmeuble();
+      
+      // Initialiser le formulaire avec les données actuelles
+      const infos = this.immeubleService.immeuble();
+      this.form = {
+        nom: infos.nom || '',
+        adresse: infos.adresse || '',
+        ville: infos.ville || '',
+        nomProprietaire: infos.nomProprietaire || '',
+        telephone: infos.telephone || '',
+        devise: infos.devise || 'FCFA',
+        logoUrl: infos.logoUrl || ''
+      };
+    } catch (err) {
+      this.toastService.showError("Erreur lors du chargement des paramètres");
+    } finally {
+      this.isFetchingData.set(false);
+    }
   }
 
   // Simulation d'un upload de fichier pour le MVP
@@ -68,25 +80,35 @@ export class ParametresComponent implements OnInit {
     this.form.logoUrl = '';
   }
 
-  sauvegarder() {
+  async sauvegarder() {
     if (!this.form.nom || !this.form.nomProprietaire) {
       this.toastService.showError('Le nom de l\'immeuble et du propriétaire sont obligatoires.');
       return;
     }
 
-    // Mettre à jour les informations globales
-    this.immeubleService.mettreAJourInfos({
-      nom: this.form.nom,
-      adresse: this.form.adresse,
-      ville: this.form.ville,
-      nomProprietaire: this.form.nomProprietaire,
-      telephone: this.form.telephone,
-      devise: this.form.devise
-    });
+    this.isSubmitting.set(true);
+    try {
+      // Simulation appel réseau
+      await new Promise(r => setTimeout(r, 800));
 
-    // Mettre à jour le logo
-    this.immeubleService.mettreAJourLogo(this.form.logoUrl);
+      // Mettre à jour les informations globales
+      this.immeubleService.mettreAJourInfos({
+        nom: this.form.nom,
+        adresse: this.form.adresse,
+        ville: this.form.ville,
+        nomProprietaire: this.form.nomProprietaire,
+        telephone: this.form.telephone,
+        devise: this.form.devise
+      });
 
-    this.toastService.showSuccess('Paramètres de l\'immeuble enregistrés avec succès !');
+      // Mettre à jour le logo
+      this.immeubleService.mettreAJourLogo(this.form.logoUrl);
+
+      this.toastService.showSuccess('Paramètres de l\'immeuble enregistrés avec succès !');
+    } catch (err) {
+      this.toastService.showError("Erreur lors de la sauvegarde");
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 }

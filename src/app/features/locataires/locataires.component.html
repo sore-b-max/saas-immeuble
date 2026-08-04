@@ -28,7 +28,7 @@
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <ng-icon name="tablerSearch" class="text-gray-400"></ng-icon>
         </div>
-        <input (input)="recherche.set($any($event.target).value)" type="text" placeholder="Rechercher un nom..." class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <input (input)="recherche.set($any($event.target).value)" [disabled]="isFetchingData()" type="text" placeholder="Rechercher un nom..." class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400">
       </div>
       <div class="flex gap-2">
         <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
@@ -52,53 +52,76 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           
-          <!-- Boucle sur le Signal locatairesFiltres() -->
-          @for (locataire of locatairesFiltres(); track locataire.id) {
-            <tr class="hover:bg-blue-50/30 transition-colors">
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                    {{ locataire.prenom.charAt(0) }}{{ locataire.nom.charAt(0) }}
+          @if (isFetchingData()) {
+            @for (i of [1,2,3]; track i) {
+              <tr class="animate-pulse">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+                    <div class="space-y-2">
+                      <div class="h-3 bg-gray-200 rounded w-24"></div>
+                      <div class="h-2 bg-gray-200 rounded w-12"></div>
+                    </div>
                   </div>
-                  <div>
-                    <p class="font-semibold text-gray-800">{{ locataire.prenom }} {{ locataire.nom }}</p>
-                    <span class="text-xs text-green-600 flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Actif
-                    </span>
+                </td>
+                <td class="px-6 py-4"><div class="h-3 bg-gray-200 rounded w-28"></div></td>
+                <td class="px-6 py-4"><div class="h-3 bg-gray-200 rounded w-20"></div></td>
+                <td class="px-6 py-4"><div class="h-5 bg-gray-200 rounded w-16"></div></td>
+                <td class="px-6 py-4"><div class="h-3 bg-gray-200 rounded w-24"></div></td>
+                <td class="px-6 py-4 text-right">
+                  <div class="h-4 bg-gray-200 rounded w-12 ml-auto"></div>
+                </td>
+              </tr>
+            }
+          } @else {
+            <!-- Boucle sur le Signal locatairesFiltres() -->
+            @for (locataire of locatairesFiltres(); track locataire.id) {
+              <tr class="hover:bg-blue-50/30 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                      {{ locataire.prenom.charAt(0) }}{{ locataire.nom.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="font-semibold text-gray-800">{{ locataire.prenom }} {{ locataire.nom }}</p>
+                      <span class="text-xs text-green-600 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Actif
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <p>{{ locataire.telephone }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <p class="font-mono text-gray-500">{{ locataire.numeroCNI }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200">
-                  Apt {{ locataire.appartementId }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                {{ locataire.dateEntree | date:'dd/MM/yyyy' }}
-              </td>
-              <td class="px-6 py-4 text-right">
-                <button (click)="ouvrirModale(locataire)" class="text-blue-500 hover:text-blue-700 transition-colors mr-3" title="Modifier ce locataire">
-                  <ng-icon name="lucideEdit"></ng-icon>
-                </button>
-                <button (click)="archiver(locataire.id)" class="text-gray-400 hover:text-red-500 transition-colors" title="Archiver ce locataire">
-                  <ng-icon name="lucideAlertTriangle"></ng-icon>
-                </button>
-              </td>
-            </tr>
-          }
+                </td>
+                <td class="px-6 py-4">
+                  <p>{{ locataire.telephone }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="font-mono text-gray-500">{{ locataire.numeroCNI }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200">
+                    Apt {{ locataire.appartementId }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  {{ locataire.dateEntree | date:'dd/MM/yyyy' }}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button (click)="ouvrirModale(locataire)" class="text-blue-500 hover:text-blue-700 transition-colors mr-3" title="Modifier ce locataire">
+                    <ng-icon name="lucideEdit"></ng-icon>
+                  </button>
+                  <button (click)="archiver(locataire.id)" class="text-gray-400 hover:text-red-500 transition-colors" title="Archiver ce locataire">
+                    <ng-icon name="lucideAlertTriangle"></ng-icon>
+                  </button>
+                </td>
+              </tr>
+            }
 
-          @if (locatairesFiltres().length === 0) {
-            <tr>
-              <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                Aucun locataire ne correspond à votre recherche.
-              </td>
-            </tr>
+            @if (locatairesFiltres().length === 0) {
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                  Aucun locataire ne correspond à votre recherche.
+                </td>
+              </tr>
+            }
           }
           
         </tbody>
@@ -158,8 +181,16 @@
           <button type="button" (click)="afficherModal.set(false)" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors">
             Annuler
           </button>
-          <button type="submit" [disabled]="locataireForm.invalid" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors">
-            {{ locataireEnEdition() ? 'Mettre à jour' : 'Enregistrer' }}
+          <button type="submit" 
+                  [disabled]="locataireForm.invalid || isSubmitting()"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            @if (isSubmitting()) {
+              <div class="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+              Patientez...
+            } @else {
+              <ng-icon name="lucideUser" size="18px"></ng-icon>
+              {{ locataireEnEdition() ? 'Mettre à jour' : 'Enregistrer' }}
+            }
           </button>
         </div>
 

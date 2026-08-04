@@ -61,6 +61,22 @@ export const routes: Routes = [
         .then(m => m.BauxComponent)
   },
 
+  // Espace Locataire (Dashboard spécifique au locataire)
+  {
+    path: 'espace-locataire',
+    loadComponent: () =>
+      import('./features/espace-locataire/espace-locataire.component')
+        .then(m => m.EspaceLocataireComponent)
+  },
+
+  // Portail Locataire (Paiement Mobile Money) - Accessible sans être admin
+  {
+    path: 'portail-locataire/:id',
+    loadComponent: () =>
+      import('./features/portail-locataire/portail-locataire.component')
+        .then(m => m.PortailLocataireComponent)
+  },
+
   // Module Travaux
   {
     path: 'travaux',

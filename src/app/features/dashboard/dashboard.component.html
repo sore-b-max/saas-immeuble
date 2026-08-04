@@ -1,146 +1,271 @@
 <!-- ================================================
-  TEMPLATE : Tableau de bord propriétaire
-  Ce que le propriétaire voit sur son écran principal
+  TEMPLATE : Tableau de bord propriétaire (Vercel Style)
 ================================================= -->
 
-<div class="dashboard">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
   <!-- EN-TÊTE -->
-  <div class="dashboard-header">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
     <div>
-      <h1>Tableau de bord</h1>
-      <p class="date-today">Bienvenue ! Voici l'état de votre patrimoine immobilier.</p>
+      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Vue d'ensemble</h1>
+      <p class="text-slate-500 text-sm mt-1">Gérez votre patrimoine immobilier en toute simplicité.</p>
     </div>
-    <div class="header-actions">
-      <button routerLink="/loyers" class="btn-primary"><ng-icon name="lucidePlus" class="icon-align"></ng-icon> Ajouter un paiement</button>
+    <div>
+      <button routerLink="/loyers" class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2 px-4 rounded-md shadow-sm transition-all flex items-center gap-2">
+        <ng-icon name="lucidePlus" size="16px"></ng-icon> Ajouter un paiement
+      </button>
     </div>
   </div>
 
-  <!-- CARTES DE STATISTIQUES PRINCIPALES -->
-  <div class="stats-grid">
-
-    <div class="stat-card blue">
-      <div class="stat-icon"><ng-icon name="lucideBuilding" size="32px"></ng-icon></div>
-      <div class="stat-content">
-        <span class="stat-number">{{ totalImmeubles() }}</span>
-        <span class="stat-label">Immeubles</span>
-      </div>
-    </div>
-
-    <div class="stat-card teal">
-      <div class="stat-icon"><ng-icon name="lucideHome" size="32px"></ng-icon></div>
-      <div class="stat-content">
-        <span class="stat-number">{{ totalAppartements() }}</span>
-        <span class="stat-label">Appartements</span>
-      </div>
-    </div>
-
-    <div class="stat-card green">
-      <div class="stat-icon"><ng-icon name="lucideUsers" size="32px"></ng-icon></div>
-      <div class="stat-content">
-        <span class="stat-number">{{ totalLocataires() }}</span>
-        <span class="stat-label">Locataires actifs</span>
-      </div>
-    </div>
-
-    <div class="stat-card purple">
-      <div class="stat-icon"><ng-icon name="lucidePieChart" size="32px"></ng-icon></div>
-      <div class="stat-content">
-        <span class="stat-number">{{ tauxOccupation() }}%</span>
-        <span class="stat-label">Taux d'occupation</span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- SECTION LOYERS DU MOIS -->
-  <div class="section-grid">
-
-    <!-- Statut des loyers -->
-    <div class="card">
-      <h2 class="card-title"><ng-icon name="lucideBanknote" class="icon-align"></ng-icon> Loyers — Août 2026</h2>
-
-      <div class="loyer-status">
-        <div class="loyer-item succes">
-          <span class="loyer-badge succes"><ng-icon name="lucideCheckCircle" class="icon-align"></ng-icon> Payés</span>
-          <span class="loyer-count">{{ loyersPayes() }}</span>
-        </div>
-        <div class="loyer-item attente">
-          <span class="loyer-badge attente"><ng-icon name="lucideClock" class="icon-align"></ng-icon> En attente</span>
-          <span class="loyer-count">{{ loyersEnAttente() }}</span>
-        </div>
-        <div class="loyer-item retard">
-          <span class="loyer-badge retard"><ng-icon name="lucideAlertCircle" class="icon-align"></ng-icon> En retard</span>
-          <span class="loyer-count">{{ loyersEnRetard() }}</span>
-        </div>
-      </div>
-
-      <div class="revenu-total">
-        <span>Revenu mensuel brut</span>
-        <strong>{{ revenuMensuel() | number }} FCFA</strong>
-      </div>
-      <div class="revenu-net">
-        <span>Revenu net (après travaux)</span>
-        <strong class="green-text">{{ revenuNet() | number }} FCFA</strong>
-      </div>
-    </div>
-
-    <!-- Raccourcis de navigation -->
-    <div class="card">
-      <h2 class="card-title"><ng-icon name="lucideRocket" class="icon-align"></ng-icon> Accès rapide</h2>
-      <div class="quick-links">
-        <a routerLink="/locataires" class="quick-link blue">
-          <span class="ql-icon"><ng-icon name="lucideUsers" size="24px"></ng-icon></span>
-          <span>Locataires</span>
-        </a>
-        <a routerLink="/baux" class="quick-link text-indigo-600 bg-indigo-50 hover:bg-indigo-100">
-          <span class="ql-icon"><ng-icon name="lucideFileText" size="24px"></ng-icon></span>
-          <span>Baux & Contrats</span>
-        </a>
-        <a routerLink="/loyers" class="quick-link green">
-          <span class="ql-icon"><ng-icon name="lucideBanknote" size="24px"></ng-icon></span>
-          <span>Loyers</span>
-        </a>
-        <a routerLink="/charges" class="quick-link orange">
-          <span class="ql-icon"><ng-icon name="lucideZap" size="24px"></ng-icon></span>
-          <span>Charges</span>
-        </a>
-        <a routerLink="/travaux" class="quick-link red">
-          <span class="ql-icon"><ng-icon name="lucideWrench" size="24px"></ng-icon></span>
-          <span>Travaux</span>
-        </a>
-        <a routerLink="/appartements" class="quick-link teal">
-          <span class="ql-icon"><ng-icon name="lucideBuilding" size="24px"></ng-icon></span>
-          <span>Appartements</span>
-        </a>
-        <a routerLink="/parametres" class="quick-link text-gray-600 bg-gray-100 hover:bg-gray-200">
-          <span class="ql-icon text-gray-500"><ng-icon name="lucideSettings" size="24px"></ng-icon></span>
-          <span>Paramètres</span>
-        </a>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ACTIVITÉS RÉCENTES -->
-  <div class="card">
-    <h2 class="card-title"><ng-icon name="lucideClock" class="icon-align"></ng-icon> Activités récentes</h2>
-    <div class="activites-list">
-      @for (activite of activitesRecentes(); track activite.texte) {
-        <div class="activite-item">
-          <span class="activite-icone"><ng-icon [name]="activite.icone" size="24px"></ng-icon></span>
-          <div class="activite-detail">
-            <p class="activite-texte">{{ activite.texte }}</p>
-            <small class="activite-temps">{{ activite.temps }}</small>
+  @if (isLoading()) {
+    <!-- SKELETON LOADERS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 animate-pulse">
+          <div class="flex justify-between items-start">
+            <div class="h-4 bg-slate-200 rounded w-24"></div>
+            <div class="w-8 h-8 rounded-lg bg-slate-200"></div>
           </div>
-          <span class="activite-badge {{ activite.type }}">
-            @if (activite.type === 'succes') { Succès }
-            @else if (activite.type === 'alerte') { Alerte }
-            @else { Info }
-          </span>
+          <div class="flex items-end justify-between">
+            <div class="h-8 bg-slate-200 rounded w-16"></div>
+            <div class="h-4 bg-slate-200 rounded w-12"></div>
+          </div>
         </div>
       }
     </div>
-  </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 h-[350px] animate-pulse">
+        <div class="flex justify-between items-start mb-6">
+          <div class="space-y-2">
+            <div class="h-5 bg-slate-200 rounded w-32"></div>
+            <div class="h-4 bg-slate-200 rounded w-48"></div>
+          </div>
+          <div class="space-y-2 text-right">
+            <div class="h-8 bg-slate-200 rounded w-32 ml-auto"></div>
+            <div class="h-4 bg-slate-200 rounded w-24 ml-auto"></div>
+          </div>
+        </div>
+        <div class="h-48 bg-slate-100 rounded-lg w-full mt-8"></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 animate-pulse">
+        <div class="h-5 bg-slate-200 rounded w-40 mb-6"></div>
+        <div class="space-y-4">
+          <div class="h-12 bg-slate-100 rounded-lg w-full"></div>
+          <div class="h-12 bg-slate-100 rounded-lg w-full"></div>
+          <div class="h-12 bg-slate-100 rounded-lg w-full"></div>
+        </div>
+      </div>
+    </div>
+  } @else if (dashboardData()) {
+    @let data = dashboardData()!;
+    <!-- CARTES DE STATISTIQUES PRINCIPALES -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+      <!-- Immeubles -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+        <div class="flex justify-between items-start">
+          <span class="text-slate-500 text-sm font-medium">Immeubles</span>
+          <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+            <ng-icon name="lucideBuilding" size="16px"></ng-icon>
+          </div>
+        </div>
+        <div class="flex items-end justify-between">
+          <span class="text-3xl font-semibold tracking-tight text-slate-800">{{ data.kpis.totalImmeubles }}</span>
+          <div class="flex items-center gap-1 text-xs font-medium" [ngClass]="{'text-green-600': data.kpis.tendanceImmeubles.type === 'positif', 'text-slate-400': data.kpis.tendanceImmeubles.type === 'neutre', 'text-red-600': data.kpis.tendanceImmeubles.type === 'negatif'}">
+            <ng-icon [name]="data.kpis.tendanceImmeubles.type === 'positif' ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="14px" *ngIf="data.kpis.tendanceImmeubles.type !== 'neutre'"></ng-icon>
+            <span>{{ data.kpis.tendanceImmeubles.valeur }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appartements -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+        <div class="flex justify-between items-start">
+          <span class="text-slate-500 text-sm font-medium">Appartements</span>
+          <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+            <ng-icon name="lucideHome" size="16px"></ng-icon>
+          </div>
+        </div>
+        <div class="flex items-end justify-between">
+          <span class="text-3xl font-semibold tracking-tight text-slate-800">{{ data.kpis.totalAppartements }}</span>
+          <div class="flex items-center gap-1 text-xs font-medium" [ngClass]="{'text-green-600': data.kpis.tendanceApparts.type === 'positif', 'text-slate-400': data.kpis.tendanceApparts.type === 'neutre'}">
+            <ng-icon [name]="data.kpis.tendanceApparts.type === 'positif' ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="14px" *ngIf="data.kpis.tendanceApparts.type !== 'neutre'"></ng-icon>
+            <span>{{ data.kpis.tendanceApparts.valeur }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Locataires -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+        <div class="flex justify-between items-start">
+          <span class="text-slate-500 text-sm font-medium">Locataires actifs</span>
+          <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+            <ng-icon name="lucideUsers" size="16px"></ng-icon>
+          </div>
+        </div>
+        <div class="flex items-end justify-between">
+          <span class="text-3xl font-semibold tracking-tight text-slate-800">{{ data.kpis.totalLocataires }}</span>
+          <div class="flex items-center gap-1 text-xs font-medium" [ngClass]="{'text-green-600': data.kpis.tendanceLocs.type === 'positif', 'text-slate-400': data.kpis.tendanceLocs.type === 'neutre'}">
+            <ng-icon [name]="data.kpis.tendanceLocs.type === 'positif' ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="14px" *ngIf="data.kpis.tendanceLocs.type !== 'neutre'"></ng-icon>
+            <span>{{ data.kpis.tendanceLocs.valeur }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taux d'occupation -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+        <div class="flex justify-between items-start">
+          <span class="text-slate-500 text-sm font-medium">Taux d'occupation</span>
+          <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+            <ng-icon name="lucidePieChart" size="16px"></ng-icon>
+          </div>
+        </div>
+        <div class="flex items-end justify-between">
+          <span class="text-3xl font-semibold tracking-tight text-slate-800">{{ data.kpis.tauxOccupation }}%</span>
+          <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-full bg-blue-600 rounded-full" [style.width.%]="data.kpis.tauxOccupation"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION LOYERS & GRAPHIQUE -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+      <!-- Graphique & Revenus (Prend 2 colonnes sur 3) -->
+      <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800">Revenus Nets</h2>
+            <p class="text-sm text-slate-500">Évolution sur les derniers mois</p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-bold tracking-tight text-slate-800">{{ data.finances.revenuNet | number }} <span class="text-sm text-slate-500 font-normal">FCFA</span></div>
+            <span class="text-xs font-medium text-green-600 flex items-center gap-1 justify-end">
+              <ng-icon name="lucideTrendingUp" size="14px"></ng-icon> +10.2% vs mois prec.
+            </span>
+          </div>
+        </div>
+        
+        <!-- Graphique -->
+        <div class="flex-1 w-full min-h-[250px] relative">
+          <canvas baseChart
+            [data]="lineChartData()"
+            [options]="lineChartOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Statut des loyers (1 colonne) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-base font-semibold text-slate-800 mb-6">Loyers — Août 2026</h2>
+
+        <div class="space-y-3 mb-6">
+          <div class="flex justify-between items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+              <span class="text-sm font-medium text-slate-700">Payés</span>
+            </div>
+            <span class="text-sm font-semibold text-slate-800">{{ data.finances.loyersPayes }}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+              <span class="text-sm font-medium text-slate-700">En attente</span>
+            </div>
+            <span class="text-sm font-semibold text-slate-800">{{ data.finances.loyersEnAttente }}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full bg-red-500"></div>
+              <span class="text-sm font-medium text-slate-700">En retard</span>
+            </div>
+            <span class="text-sm font-semibold text-slate-800">{{ data.finances.loyersEnRetard }}</span>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Revenu brut</span>
+            <span class="font-medium text-slate-800">{{ data.finances.revenuMensuel | number }} FCFA</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Dépenses</span>
+            <span class="font-medium text-red-600">- {{ data.finances.depensesTravaux | number }} FCFA</span>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button (click)="exporterRapport()" class="w-full py-2 bg-white border border-slate-200 text-slate-700 rounded-md text-sm font-medium hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors shadow-sm">
+            <ng-icon name="lucideDownload" size="16px"></ng-icon> Exporter CSV
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACCÈS RAPIDE & ACTIVITÉS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Accès Rapide -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-base font-semibold text-slate-800 mb-4">Accès rapide</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <a routerLink="/locataires" class="flex flex-col items-center p-4 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-slate-600 hover:text-blue-600 group">
+            <ng-icon name="lucideUsers" size="20px" class="mb-2 text-slate-400 group-hover:text-blue-600 transition-colors"></ng-icon>
+            <span class="text-sm font-medium">Locataires</span>
+          </a>
+          <a routerLink="/baux" class="flex flex-col items-center p-4 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-slate-600 hover:text-blue-600 group">
+            <ng-icon name="lucideFileText" size="20px" class="mb-2 text-slate-400 group-hover:text-blue-600 transition-colors"></ng-icon>
+            <span class="text-sm font-medium">Baux</span>
+          </a>
+          <a routerLink="/loyers" class="flex flex-col items-center p-4 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-slate-600 hover:text-blue-600 group">
+            <ng-icon name="lucideBanknote" size="20px" class="mb-2 text-slate-400 group-hover:text-blue-600 transition-colors"></ng-icon>
+            <span class="text-sm font-medium">Loyers</span>
+          </a>
+          <a routerLink="/charges" class="flex flex-col items-center p-4 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-slate-600 hover:text-blue-600 group">
+            <ng-icon name="lucideZap" size="20px" class="mb-2 text-slate-400 group-hover:text-blue-600 transition-colors"></ng-icon>
+            <span class="text-sm font-medium">Charges</span>
+          </a>
+          <a routerLink="/travaux" class="flex flex-col items-center p-4 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-slate-600 hover:text-blue-600 group">
+            <ng-icon name="lucideWrench" size="20px" class="mb-2 text-slate-400 group-hover:text-blue-600 transition-colors"></ng-icon>
+            <span class="text-sm font-medium">Travaux</span>
+          </a>
+          <a routerLink="/appartements" class="flex flex-col items-center p-4 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-slate-600 hover:text-blue-600 group">
+            <ng-icon name="lucideBuilding" size="20px" class="mb-2 text-slate-400 group-hover:text-blue-600 transition-colors"></ng-icon>
+            <span class="text-sm font-medium">Biens</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Activités récentes -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-base font-semibold text-slate-800 mb-4">Activités récentes</h2>
+        <div class="space-y-1">
+          @for (activite of data.activitesRecentes; track activite.texte) {
+            <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+              <div class="mt-0.5">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center border"
+                     [ngClass]="{
+                       'bg-emerald-50 border-emerald-100 text-emerald-600': activite.type === 'succes',
+                       'bg-red-50 border-red-100 text-red-600': activite.type === 'alerte',
+                       'bg-slate-50 border-slate-200 text-slate-600': activite.type === 'info'
+                     }">
+                  <ng-icon [name]="activite.icone" size="14px"></ng-icon>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-800 truncate">{{ activite.texte }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ activite.temps }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  }
 </div>

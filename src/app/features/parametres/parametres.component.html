@@ -13,13 +13,31 @@
     </div>
     
     <div>
-      <button (click)="sauvegarder()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition-all flex items-center gap-2">
-        <ng-icon name="lucideSave" size="20px"></ng-icon>
-        Enregistrer les modifications
+      <button (click)="sauvegarder()" 
+              [disabled]="isSubmitting() || isFetchingData()"
+              class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 min-w-[240px]">
+        @if (isSubmitting()) {
+          <div class="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+          Enregistrement...
+        } @else {
+          <ng-icon name="lucideSave" size="20px"></ng-icon>
+          Enregistrer les modifications
+        }
       </button>
     </div>
   </div>
 
+  @if (isFetchingData()) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-pulse">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-h-[300px]"></div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-h-[300px]"></div>
+      </div>
+      <div class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]"></div>
+      </div>
+    </div>
+  } @else {
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     
     <!-- Colonne Principale: Infos générales -->
@@ -122,4 +140,5 @@
     </div>
     
   </div>
+  }
 </div>

@@ -1,11 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ChargeService } from '../../core/services/charge.service';
 import { Charge, TypeCharge, CleRepartition } from '../../core/models/charge.model';
 import { AppartementService } from '../../core/services/appartement.service';
+import { ToastService } from '../../core/services/toast.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp, lucideHome } from '@ng-icons/lucide';
+import { lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp, lucideHome, lucideBell } from '@ng-icons/lucide';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -15,13 +16,17 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './charges.component.html',
   styleUrl: './charges.component.css',
   providers: [
-    provideIcons({ lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp, lucideHome })
+    provideIcons({ lucidePlus, lucideDroplet, lucideZap, lucideShield, lucideWrench, lucideFileText, lucideCheckCircle, lucideChevronDown, lucideChevronUp, lucideHome, lucideBell })
   ]
 })
-export class ChargesComponent {
+export class ChargesComponent implements OnInit {
   
   chargeService = inject(ChargeService);
   appartementService = inject(AppartementService);
+  toastService = inject(ToastService);
+
+  isFetchingData = signal(true);
+  isSubmitting = signal(false);
 
   // Données
   charges = this.chargeService.charges;
@@ -41,6 +46,17 @@ export class ChargesComponent {
     modeRepartition: 'egal' as CleRepartition,
     immeubleId: 1
   });
+
+  async ngOnInit() {
+    try {
+      this.isFetchingData.set(true);
+      await this.chargeService.fetchCharges();
+    } catch (err) {
+      this.toastService.showError("Erreur lors du chargement des charges");
+    } finally {
+      this.isFetchingData.set(false);
+    }
+  }
 
   toggleExpand(chargeId: number) {
     if (this.expandedChargeId() === chargeId) {
@@ -69,30 +85,41 @@ export class ChargesComponent {
     this.chargeService.marquerPaye(chargeId, appartementId);
   }
 
-  soumettreFacture() {
+  notifierLocataires(charge: Charge) {
+    this.toastService.showSuccess(`Les notifications SMS/Email ont été envoyées aux ${charge.repartitions?.length || 0} locataires concernés.`);
+  }
+
+  async soumettreFacture() {
     const formValues = this.nouvelleFacture();
     
     // Validation basique
     if (formValues.montantTotal <= 0) {
-      alert("Veuillez saisir un montant valide.");
+      this.toastService.showError("Veuillez saisir un montant valide.");
       return;
     }
 
     if (!formValues.periodeFacture) {
-      alert("Veuillez saisir une période.");
+      this.toastService.showError("Veuillez saisir une période.");
       return;
     }
 
-    this.chargeService.ajouterCharge({
-      immeubleId: formValues.immeubleId,
-      typeCharge: formValues.typeCharge as any,
-      montantTotal: formValues.montantTotal,
-      periodeFacture: formValues.periodeFacture,
-      dateFacture: new Date(formValues.dateFacture),
-      modeRepartition: formValues.modeRepartition as any
-    });
-
-    this.fermerModale();
+    this.isSubmitting.set(true);
+    try {
+      await this.chargeService.ajouterCharge({
+        immeubleId: formValues.immeubleId,
+        typeCharge: formValues.typeCharge as any,
+        montantTotal: formValues.montantTotal,
+        periodeFacture: formValues.periodeFacture,
+        dateFacture: new Date(formValues.dateFacture),
+        modeRepartition: formValues.modeRepartition as any
+      });
+      this.toastService.showSuccess("Facture ajoutée avec succès");
+      this.fermerModale();
+    } catch (err) {
+      this.toastService.showError("Erreur lors de l'ajout de la facture");
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 
   ouvrirModale() {
