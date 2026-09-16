@@ -28,7 +28,7 @@
           <div class="text-sm font-medium text-slate-700 hidden sm:block">
             Connecté : {{ locataire()?.prenom }} {{ locataire()?.nom }}
           </div>
-          <button routerLink="/" class="text-slate-500 hover:text-red-600 transition-colors flex items-center gap-2 text-sm font-medium">
+          <button (click)="logout($event)" class="text-slate-500 hover:text-red-600 transition-colors flex items-center gap-2 text-sm font-medium">
             <ng-icon name="lucideLogOut" size="18px"></ng-icon>
             <span class="hidden sm:inline">Déconnexion</span>
           </button>
@@ -180,7 +180,7 @@
                 </div>
                 <div class="w-px h-10 bg-slate-200 hidden sm:block"></div>
                 <ng-container *ngIf="p.statut === 'paye'">
-                  <button class="inline-flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                  <button (click)="telechargerQuittance(p)" class="inline-flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors">
                     <ng-icon name="lucideDownload" size="16px"></ng-icon> Quittance
                   </button>
                 </ng-container>
@@ -243,8 +243,10 @@
               </div>
             </div>
             
-            <div *ngIf="chargesLocataire().length === 0" class="p-8 text-center text-slate-500">
-              Aucune charge assignée.
+            <div *ngIf="chargesLocataire().length === 0" class="p-8 text-center flex flex-col items-center justify-center">
+              <app-lottie-player path="/assets/animations/empty-state.json" width="140px" height="140px" [loop]="true"></app-lottie-player>
+              <p class="text-slate-600 font-semibold text-sm mt-2">Aucune charge attribuée</p>
+              <p class="text-slate-400 text-xs mt-1">Vous n'avez aucune charge commune en attente de paiement.</p>
             </div>
           </div>
         </div>
@@ -257,7 +259,8 @@
       
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-slate-900">Suivi de vos incidents</h2>
-        <button class="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-sm">
+        <button (click)="ouvrirModalIncident()" class="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm">
+          <ng-icon name="lucideAlertCircle" size="16px"></ng-icon>
           Signaler un problème
         </button>
       </div>
@@ -275,8 +278,8 @@
               <ng-icon name="lucideAlertCircle" size="20px"></ng-icon>
             </div>
             <div>
-              <p class="font-semibold text-slate-900">{{ inc.type }}</p>
-              <p class="text-xs text-slate-500">Signalé le {{ inc.date | date:'dd/MM/yyyy' }}</p>
+              <p class="font-semibold text-slate-900">{{ inc.titre }}</p>
+              <p class="text-xs text-slate-500">Signalé le {{ inc.dateSignalement | date:'dd/MM/yyyy' }}</p>
             </div>
           </div>
           
@@ -291,10 +294,10 @@
 </div>
 
 <!-- Modal Paiement Mobile Money -->
-<div *ngIf="showPaiementModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+<div *ngIf="showPaiementModal()" class="fixed inset-0 z-[100] flex justify-center items-start p-4 pt-20 pb-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-7rem)] flex flex-col overflow-hidden">
     <!-- Header -->
-    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
       <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
         <ng-icon name="lucideSmartphone" size="20px" class="text-blue-600"></ng-icon>
         Paiement Mobile Money
@@ -305,7 +308,7 @@
     </div>
     
     <!-- Body -->
-    <div class="p-6 space-y-6 bg-slate-50/50">
+    <div class="p-6 space-y-6 bg-slate-50/50 overflow-y-auto flex-1">
       <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm flex justify-between items-center">
         <div>
           <p class="text-sm text-slate-500 font-medium">Montant à régler</p>
@@ -350,7 +353,7 @@
     </div>
     
     <!-- Footer -->
-    <div class="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white">
+    <div class="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white shrink-0">
       <button type="button" (click)="fermerModalPaiement()" class="flex-1 px-4 py-3 text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-sm font-bold transition-colors">Annuler</button>
       <button type="button" (click)="executerPaiement()" [disabled]="isSubmittingPaiement()" class="flex-[2] px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-colors shadow-sm flex items-center justify-center gap-2">
         @if (isSubmittingPaiement()) {
@@ -358,6 +361,47 @@
           Traitement...
         } @else {
           Confirmer le paiement
+        }
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Signaler Incident -->
+<div *ngIf="showIncidentModal()" class="fixed inset-0 z-[100] flex justify-center items-start p-4 pt-20 pb-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-7rem)] flex flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+      <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+        <ng-icon name="lucideAlertCircle" size="20px" class="text-blue-600"></ng-icon>
+        Nouveau Signalement
+      </h2>
+      <button (click)="fermerModalIncident()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100">
+        <ng-icon name="lucideX" size="20px"></ng-icon>
+      </button>
+    </div>
+    
+    <!-- Body -->
+    <div class="p-6 space-y-4 bg-slate-50/50 overflow-y-auto flex-1">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Titre du problème</label>
+        <input type="text" [(ngModel)]="formIncident.titre" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-900 placeholder:font-normal placeholder:text-slate-400" placeholder="ex: Fuite d'eau cuisine">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Description détaillée</label>
+        <textarea [(ngModel)]="formIncident.description" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-900 placeholder:font-normal placeholder:text-slate-400 resize-none" placeholder="Décrivez le problème avec le plus de détails possible..."></textarea>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white shrink-0">
+      <button type="button" (click)="fermerModalIncident()" class="flex-1 px-4 py-3 text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-sm font-bold transition-colors">Annuler</button>
+      <button type="button" (click)="soumettreIncident()" [disabled]="isSubmittingIncident()" class="flex-[2] px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-colors shadow-sm flex items-center justify-center gap-2">
+        @if (isSubmittingIncident()) {
+          <div class="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+          Traitement...
+        } @else {
+          Envoyer le signalement
         }
       </button>
     </div>

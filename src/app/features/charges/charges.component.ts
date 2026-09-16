@@ -28,34 +28,33 @@ export class ChargesComponent implements OnInit {
   isFetchingData = signal(true);
   isSubmitting = signal(false);
 
-  // Données
   charges = this.chargeService.charges;
   appartements = this.appartementService.appartements;
 
-  // UI State
   showModale = signal(false);
   expandedChargeId = signal<number | null>(null);
 
-  // Formulaire Nouvelle Facture
   nouvelleFacture = signal({
     typeCharge: 'eau' as TypeCharge,
     libelle: '',
     montantTotal: 0,
-    periodeFacture: new Date().toISOString().substring(0, 7), // Format YYYY-MM
+    periodeFacture: new Date().toISOString().substring(0, 7),
     dateFacture: new Date().toISOString().split('T')[0],
     modeRepartition: 'egal' as CleRepartition,
     immeubleId: 1
   });
 
-  async ngOnInit() {
-    try {
-      this.isFetchingData.set(true);
-      await this.chargeService.fetchCharges();
-    } catch (err) {
-      this.toastService.showError("Erreur lors du chargement des charges");
-    } finally {
-      this.isFetchingData.set(false);
-    }
+  ngOnInit() {
+    this.isFetchingData.set(true);
+    this.appartementService.fetchAppartements().subscribe();
+    this.chargeService.fetchCharges().subscribe({
+      next: () => this.isFetchingData.set(false),
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors du chargement des charges");
+        this.isFetchingData.set(false);
+      }
+    });
   }
 
   toggleExpand(chargeId: number) {
@@ -82,17 +81,22 @@ export class ChargesComponent implements OnInit {
   }
 
   marquerPaye(chargeId: number, appartementId: number) {
-    this.chargeService.marquerPaye(chargeId, appartementId);
+    this.chargeService.marquerPaye(chargeId, appartementId).subscribe({
+      next: () => this.toastService.showSuccess('Charge marquée comme payée.'),
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors de la mise à jour.");
+      }
+    });
   }
 
   notifierLocataires(charge: Charge) {
     this.toastService.showSuccess(`Les notifications SMS/Email ont été envoyées aux ${charge.repartitions?.length || 0} locataires concernés.`);
   }
 
-  async soumettreFacture() {
+  soumettreFacture() {
     const formValues = this.nouvelleFacture();
     
-    // Validation basique
     if (formValues.montantTotal <= 0) {
       this.toastService.showError("Veuillez saisir un montant valide.");
       return;
@@ -104,22 +108,25 @@ export class ChargesComponent implements OnInit {
     }
 
     this.isSubmitting.set(true);
-    try {
-      await this.chargeService.ajouterCharge({
-        immeubleId: formValues.immeubleId,
-        typeCharge: formValues.typeCharge as any,
-        montantTotal: formValues.montantTotal,
-        periodeFacture: formValues.periodeFacture,
-        dateFacture: new Date(formValues.dateFacture),
-        modeRepartition: formValues.modeRepartition as any
-      });
-      this.toastService.showSuccess("Facture ajoutée avec succès");
-      this.fermerModale();
-    } catch (err) {
-      this.toastService.showError("Erreur lors de l'ajout de la facture");
-    } finally {
-      this.isSubmitting.set(false);
-    }
+    this.chargeService.ajouterCharge({
+      immeubleId: formValues.immeubleId,
+      typeCharge: formValues.typeCharge as any,
+      montantTotal: formValues.montantTotal,
+      periodeFacture: formValues.periodeFacture,
+      dateFacture: new Date(formValues.dateFacture),
+      modeRepartition: formValues.modeRepartition as any
+    }).subscribe({
+      next: () => {
+        this.toastService.showSuccess("Facture ajoutée avec succès");
+        this.fermerModale();
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors de l'ajout de la facture");
+        this.isSubmitting.set(false);
+      }
+    });
   }
 
   ouvrirModale() {
@@ -128,7 +135,6 @@ export class ChargesComponent implements OnInit {
 
   fermerModale() {
     this.showModale.set(false);
-    // Reset form
     this.nouvelleFacture.set({
       typeCharge: 'eau',
       libelle: '',

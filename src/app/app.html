@@ -2,8 +2,13 @@
   Voici la coque principale de l'application. 
   Le <router-outlet> affichera la bonne page selon l'URL (par exemple le Dashboard).
 -->
-<app-navbar></app-navbar>
-<main class="main-content">
-  <router-outlet></router-outlet>
-</main>
+<app-navbar *ngIf="authService.isAuthenticated() && authService.userRole() === 'ADMIN'"></app-navbar>
+<div [ngClass]="authService.userRole() === 'ADMIN' ? 'min-h-screen bg-slate-50 relative overflow-hidden' : ''">
+  <!-- Premium Blob Gradient (only for admin) -->
+  <div *ngIf="authService.userRole() === 'ADMIN'" class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none z-0"></div>
+  
+  <main class="main-content relative z-10">
+    <router-outlet></router-outlet>
+  </main>
+</div>
 <app-toast></app-toast>

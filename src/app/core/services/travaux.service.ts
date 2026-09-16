@@ -1,55 +1,19 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { Travaux } from '../models/travaux.model';
-import { simulateApiCall } from '../utils/api-delay.util';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TravauxService {
-  // Liste des travaux (données simulées pour le MVP)
+  private http = inject(HttpClient);
+  
   private travauxState = signal<Travaux[]>([]);
-
-  private mockDatabase: Travaux[] = [
-    {
-      id: 1,
-      titre: 'Fuite robinet salle de bain',
-      description: 'Le robinet de la baignoire goutte continuellement même fermé.',
-      cout: 15000,
-      appartementId: 1,
-      dateSignalement: new Date('2026-08-01T10:30:00'),
-      statut: 'signale'
-    },
-    {
-      id: 2,
-      titre: 'Changement serrure porte principale',
-      description: 'La serrure accroche, nécessite un remplacement complet du barillet.',
-      cout: 25000,
-      appartementId: 2,
-      dateSignalement: new Date('2026-07-28T14:15:00'),
-      dateRealisation: new Date('2026-07-30T09:00:00'),
-      statut: 'termine',
-      photos: ['https://placehold.co/600x400/eeeeee/888888?text=Serrure+Remplacee']
-    },
-    {
-      id: 3,
-      titre: 'Réparation climatisation',
-      description: 'Le split ne refroidit plus la pièce, compresseur tourne dans le vide.',
-      cout: 45000,
-      appartementId: 3,
-      dateSignalement: new Date('2026-08-02T08:00:00'),
-      statut: 'en_cours'
-    }
-  ];
-
-  async fetchTravaux(): Promise<void> {
-    await simulateApiCall(1500);
-    this.travauxState.set([...this.mockDatabase]);
-  }
-
-  // Signaux publics en lecture seule
   public readonly travaux = this.travauxState.asReadonly();
 
-  // Statistiques dérivées
   public travauxEnCours = computed(() => this.travauxState().filter(t => t.statut === 'en_cours').length);
   public travauxSignales = computed(() => this.travauxState().filter(t => t.statut === 'signale').length);
   public depensesTotales = computed(() => 
@@ -58,76 +22,146 @@ export class TravauxService {
       .reduce((sum, current) => sum + current.cout, 0)
   );
 
-  constructor() { }
+  private defaultMocks: Travaux[] = [
+    { id: 1, titre: 'Fuite robinet salle de bain', description: 'Le robinet de la baignoire goutte continuellement même fermé.', cout: 15000, appartementId: 1, dateSignalement: new Date('2026-08-01T10:30:00'), statut: 'signale' },
+    { id: 2, titre: 'Changement serrure porte principale', description: 'La serrure accroche, nécessite un remplacement complet du barillet.', cout: 25000, appartementId: 2, dateSignalement: new Date('2026-07-28T14:15:00'), dateRealisation: new Date('2026-07-30T09:00:00'), statut: 'termine', photos: ['https://placehold.co/600x400/eeeeee/888888?text=Serrure+Remplacee'] },
+    { id: 3, titre: 'Réparation climatisation', description: 'Le split ne refroidit plus la pièce, compresseur tourne dans le vide.', cout: 45000, appartementId: 3, dateSignalement: new Date('2026-08-02T08:00:00'), statut: 'en_cours' }
+  ];
 
-  /**
-   * Ajouter un nouveau travail / intervention
-   */
-  async ajouterTravail(travail: Omit<Travaux, 'id' | 'statut' | 'dateSignalement'>) {
-    await simulateApiCall(800);
-    const nouveauTravail: Travaux = {
-      ...travail,
-      id: this.travauxState().length > 0 ? Math.max(...this.travauxState().map(t => t.id)) + 1 : 1,
-      statut: 'signale',
-      dateSignalement: new Date()
+  public fetchTravaux(): Observable<Travaux[]> {
+    const current = this.travauxState();
+
+    if (environment.useMocks) {
+      if (current.length === 0) {
+        this.travauxState.set(this.defaultMocks);
+        return of(this.defaultMocks);
+      }
+      return of(current);
+    }
+
+    return this.http.get<Travaux[]>(`${environment.apiUrl}/travaux`).pipe(
+      tap(data => {
+        if (data && data.length > 0) {
+          this.travauxState.set(data);
+        } else if (this.travauxState().length === 0) {
+          this.travauxState.set(this.defaultMocks);
+        }
+      }),
+      catchError(err => {
+        console.warn('Backend travaux indisponible, conservation des données locales', err);
+        if (this.travauxState().length === 0) {
+          this.travauxState.set(this.defaultMocks);
+        }
+        return of(this.travauxState());
+      })
+    );
+  }
+
+  public ajouterTravail(travail: Omit<Travaux, 'id' | 'statut' | 'dateSignalement'>): Observable<Travaux> {
+    if (environment.useMocks) {
+      const nouveauTravail = { ...travail, id: this.travauxState().length > 0 ? Math.max(...this.travauxState().map(t => t.id)) + 1 : 1, statut: 'signale', dateSignalement: new Date() } as Travaux;
+      this.travauxState.update(travaux => [nouveauTravail, ...travaux]);
+      return of(nouveauTravail);
+    }
+
+    return this.http.post<Travaux>(`${environment.apiUrl}/travaux`, travail).pipe(
+      tap(created => this.travauxState.update(travaux => [created, ...travaux])),
+      catchError(err => {
+        console.warn('Backend indisponible pour ajout travaux, mise à jour locale', err);
+        const nouveauTravail = { ...travail, id: Date.now(), statut: 'signale', dateSignalement: new Date() } as Travaux;
+        this.travauxState.update(travaux => [nouveauTravail, ...travaux]);
+        return of(nouveauTravail);
+      })
+    );
+  }
+
+  public changerStatut(id: number, nouveauStatut: 'signale' | 'en_cours' | 'termine'): Observable<Travaux> {
+    const updateLocalState = () => {
+      let modified: Travaux | undefined;
+      this.travauxState.update(travaux => travaux.map(t => {
+        if (t.id === id) {
+          modified = { ...t, statut: nouveauStatut };
+          if (nouveauStatut === 'termine') modified.dateRealisation = new Date();
+          return modified;
+        }
+        return t;
+      }));
+      return modified || ({ id, statut: nouveauStatut } as Travaux);
     };
+
+    if (environment.useMocks) {
+      return of(updateLocalState());
+    }
+
+    const payload: Partial<Travaux> = { statut: nouveauStatut };
+    if (nouveauStatut === 'termine') payload.dateRealisation = new Date().toISOString().split('T')[0] as any as Date;
     
-    this.travauxState.update(travaux => [nouveauTravail, ...travaux]);
-  }
-
-  /**
-   * Mettre à jour le statut d'un travail
-   */
-  async changerStatut(id: number, nouveauStatut: 'signale' | 'en_cours' | 'termine') {
-    await simulateApiCall(800);
-    this.travauxState.update(travaux => 
-      travaux.map(t => {
-        if (t.id === id) {
-          const modifie = { ...t, statut: nouveauStatut };
-          if (nouveauStatut === 'termine') {
-            modifie.dateRealisation = new Date();
-          }
-          return modifie;
-        }
-        return t;
+    return this.http.patch<Travaux>(`${environment.apiUrl}/travaux/${id}`, payload).pipe(
+      tap(updated => this.travauxState.update(travaux => travaux.map(t => t.id === id ? (updated || { ...t, statut: nouveauStatut }) : t))),
+      catchError(err => {
+        console.warn('Backend indisponible pour changement statut travaux, mise à jour locale', err);
+        return of(updateLocalState());
       })
     );
   }
 
-  /**
-   * Ajouter une photo (simulée via base64 ou URL) à un travail
-   */
-  async ajouterPhoto(id: number, photoUrl: string) {
-    await simulateApiCall(800);
-    this.travauxState.update(travaux => 
-      travaux.map(t => {
+  public ajouterPhoto(id: number, photoUrl: string): Observable<Travaux | null> {
+    const updateLocalState = () => {
+      let modified: Travaux | undefined;
+      this.travauxState.update(travaux => travaux.map(t => {
         if (t.id === id) {
-          return {
-            ...t,
-            photos: t.photos ? [...t.photos, photoUrl] : [photoUrl]
-          };
+          modified = { ...t, photos: t.photos ? [...t.photos, photoUrl] : [photoUrl] };
+          return modified;
         }
         return t;
+      }));
+      return modified || null;
+    };
+
+    if (environment.useMocks) {
+      return of(updateLocalState());
+    }
+
+    const t = this.travauxState().find(tr => tr.id === id);
+    if (!t) return of(null);
+    const photos = t.photos ? [...t.photos, photoUrl] : [photoUrl];
+    return this.http.patch<Travaux>(`${environment.apiUrl}/travaux/${id}`, { photos }).pipe(
+      tap(updated => this.travauxState.update(travaux => travaux.map(tr => tr.id === id ? updated : tr))),
+      catchError(err => {
+        console.warn('Backend indisponible pour ajout photo, mise à jour locale', err);
+        return of(updateLocalState());
       })
     );
   }
 
-  /**
-   * Supprimer une photo d'un travail
-   */
-  async supprimerPhoto(id: number, index: number) {
-    await simulateApiCall(400);
-    this.travauxState.update(travaux => 
-      travaux.map(t => {
+  public supprimerPhoto(id: number, index: number): Observable<Travaux | null> {
+    const updateLocalState = () => {
+      let modified: Travaux | undefined;
+      this.travauxState.update(travaux => travaux.map(t => {
         if (t.id === id && t.photos) {
           const newPhotos = [...t.photos];
           newPhotos.splice(index, 1);
-          return {
-            ...t,
-            photos: newPhotos
-          };
+          modified = { ...t, photos: newPhotos };
+          return modified;
         }
         return t;
+      }));
+      return modified || null;
+    };
+
+    if (environment.useMocks) {
+      return of(updateLocalState());
+    }
+
+    const t = this.travauxState().find(tr => tr.id === id);
+    if (!t || !t.photos) return of(null);
+    const photos = [...t.photos];
+    photos.splice(index, 1);
+    return this.http.patch<Travaux>(`${environment.apiUrl}/travaux/${id}`, { photos }).pipe(
+      tap(updated => this.travauxState.update(travaux => travaux.map(tr => tr.id === id ? updated : tr))),
+      catchError(err => {
+        console.warn('Backend indisponible pour suppression photo, mise à jour locale', err);
+        return of(updateLocalState());
       })
     );
   }

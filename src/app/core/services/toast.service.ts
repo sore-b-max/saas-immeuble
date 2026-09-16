@@ -23,6 +23,11 @@ export class ToastService {
     this.showToast(message, 'success');
   }
 
+  // Fonction pour afficher une information
+  showInfo(message: string) {
+    this.showToast(message, 'info');
+  }
+
   // Fonction pour afficher une erreur
   showError(message: string) {
     this.showToast(message, 'error');

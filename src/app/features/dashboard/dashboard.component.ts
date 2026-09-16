@@ -7,11 +7,13 @@ import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { lucideBuilding, lucideHome, lucideUsers, lucidePieChart, lucideBanknote, lucideCheckCircle, lucideClock, lucideAlertCircle, lucideRocket, lucideFileText, lucideZap, lucideWrench, lucideSettings, lucideAlertTriangle, lucideUserPlus, lucideDownload, lucideTrendingUp, lucideTrendingDown } from '@ng-icons/lucide';
 import { ToastService } from '../../core/services/toast.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
+import { LottiePlayerComponent } from '../../shared/components/lottie-player/lottie-player.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent, BaseChartDirective],
+  imports: [CommonModule, RouterLink, NgIconComponent, BaseChartDirective, LottiePlayerComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   providers: [provideIcons({ lucideBuilding, lucideHome, lucideUsers, lucidePieChart, lucideBanknote, lucideCheckCircle, lucideClock, lucideAlertCircle, lucideRocket, lucideFileText, lucideZap, lucideWrench, lucideSettings, lucideAlertTriangle, lucideUserPlus, lucideDownload, lucideTrendingUp, lucideTrendingDown })]
@@ -19,14 +21,12 @@ import { DashboardService } from '../../core/services/dashboard.service';
 export class DashboardComponent implements OnInit {
   private toastService = inject(ToastService);
   private dashboardService = inject(DashboardService);
+  private csvExportService = inject(CsvExportService);
 
   isLoading = signal<boolean>(true);
   
-  // On récupère le signal de données du service
   dashboardData = this.dashboardService.dashboardState;
 
-  // On crée un signal calculé pour la configuration du graphe 
-  // car Chart.js a besoin d'objets spécifiques qui se mettent à jour.
   lineChartData = computed<ChartConfiguration<'line'>['data']>(() => {
     const data = this.dashboardData();
     if (!data) return { labels: [], datasets: [] };
@@ -39,7 +39,7 @@ export class DashboardComponent implements OnInit {
           label: 'Revenus nets (FCFA)',
           fill: true,
           tension: 0.4,
-          borderColor: '#4f46e5', // indigo-600
+          borderColor: '#4f46e5',
           backgroundColor: 'rgba(79, 70, 229, 0.1)',
           pointBackgroundColor: '#4f46e5',
           pointBorderColor: '#fff',
@@ -75,7 +75,7 @@ export class DashboardComponent implements OnInit {
         ticks: { font: { family: 'Inter' }, color: '#6b7280' }
       },
       y: { 
-        grid: { color: '#f3f4f6' }, // gray-100
+        grid: { color: '#f3f4f6' },
         border: { display: false },
         ticks: { font: { family: 'Inter' }, color: '#6b7280' }
       }
@@ -83,18 +83,26 @@ export class DashboardComponent implements OnInit {
     interaction: { mode: 'nearest', axis: 'x', intersect: false }
   };
 
-  async ngOnInit() {
-    try {
-      this.isLoading.set(true);
-      await this.dashboardService.fetchDashboardData();
-    } catch (err) {
-      this.toastService.showError("Erreur lors du chargement du tableau de bord");
-    } finally {
-      this.isLoading.set(false);
-    }
+  ngOnInit() {
+    this.isLoading.set(true);
+    this.dashboardService.fetchDashboardData().subscribe({
+      next: () => this.isLoading.set(false),
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors du chargement du tableau de bord");
+        this.isLoading.set(false);
+      }
+    });
   }
 
   exporterRapport() {
+    const data = this.dashboardData();
+    if (!data) {
+      this.toastService.showError("Aucune donnée disponible à exporter");
+      return;
+    }
+    this.csvExportService.exportDashboard(data);
     this.toastService.showSuccess('Rapport CSV téléchargé avec succès !');
   }
 }
+

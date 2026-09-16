@@ -38,35 +38,33 @@ export class ParametresComponent implements OnInit {
     logoUrl: ''
   };
 
-  async ngOnInit() {
-    try {
-      this.isFetchingData.set(true);
-      await this.immeubleService.fetchImmeuble();
-      
-      // Initialiser le formulaire avec les données actuelles
-      const infos = this.immeubleService.immeuble();
-      this.form = {
-        nom: infos.nom || '',
-        adresse: infos.adresse || '',
-        ville: infos.ville || '',
-        nomProprietaire: infos.nomProprietaire || '',
-        telephone: infos.telephone || '',
-        devise: infos.devise || 'FCFA',
-        logoUrl: infos.logoUrl || ''
-      };
-    } catch (err) {
-      this.toastService.showError("Erreur lors du chargement des paramètres");
-    } finally {
-      this.isFetchingData.set(false);
-    }
+  ngOnInit() {
+    this.isFetchingData.set(true);
+    this.immeubleService.fetchImmeuble().subscribe({
+      next: () => {
+        const infos = this.immeubleService.immeuble();
+        this.form = {
+          nom: infos.nom || '',
+          adresse: infos.adresse || '',
+          ville: infos.ville || '',
+          nomProprietaire: infos.nomProprietaire || '',
+          telephone: infos.telephone || '',
+          devise: infos.devise || 'FCFA',
+          logoUrl: infos.logoUrl || ''
+        };
+        this.isFetchingData.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors du chargement des paramètres");
+        this.isFetchingData.set(false);
+      }
+    });
   }
 
-  // Simulation d'un upload de fichier pour le MVP
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      // Pour le MVP (sans backend), on lit le fichier et on le convertit en base64
-      // Cela permet de l'afficher et de le sauvegarder localement
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.form.logoUrl = e.target.result;
@@ -80,35 +78,31 @@ export class ParametresComponent implements OnInit {
     this.form.logoUrl = '';
   }
 
-  async sauvegarder() {
+  sauvegarder() {
     if (!this.form.nom || !this.form.nomProprietaire) {
       this.toastService.showError('Le nom de l\'immeuble et du propriétaire sont obligatoires.');
       return;
     }
 
     this.isSubmitting.set(true);
-    try {
-      // Simulation appel réseau
-      await new Promise(r => setTimeout(r, 800));
-
-      // Mettre à jour les informations globales
-      this.immeubleService.mettreAJourInfos({
-        nom: this.form.nom,
-        adresse: this.form.adresse,
-        ville: this.form.ville,
-        nomProprietaire: this.form.nomProprietaire,
-        telephone: this.form.telephone,
-        devise: this.form.devise
-      });
-
-      // Mettre à jour le logo
-      this.immeubleService.mettreAJourLogo(this.form.logoUrl);
-
-      this.toastService.showSuccess('Paramètres de l\'immeuble enregistrés avec succès !');
-    } catch (err) {
-      this.toastService.showError("Erreur lors de la sauvegarde");
-    } finally {
-      this.isSubmitting.set(false);
-    }
+    this.immeubleService.mettreAJourInfos({
+      nom: this.form.nom,
+      adresse: this.form.adresse,
+      ville: this.form.ville,
+      nomProprietaire: this.form.nomProprietaire,
+      telephone: this.form.telephone,
+      devise: this.form.devise,
+      logoUrl: this.form.logoUrl
+    }).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Paramètres de l\'immeuble enregistrés avec succès !');
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors de la sauvegarde");
+        this.isSubmitting.set(false);
+      }
+    });
   }
 }

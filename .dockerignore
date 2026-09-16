@@ -1,0 +1,31 @@
+# Dépendances Node.js (volume très lourd, ~500MB)
+node_modules/
+
+# Build Angular (regénéré par Docker)
+dist/
+.angular/
+
+# Fichiers Git
+.git/
+.gitignore
+
+# Fichiers IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Fichiers OS
+.DS_Store
+Thumbs.db
+
+# Fichiers Docker (éviter les boucles) — nginx.conf DOIT rester inclus !
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Fichiers de tests et configuration dev
+*.spec.ts
+e2e/

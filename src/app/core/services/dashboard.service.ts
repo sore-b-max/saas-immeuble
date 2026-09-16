@@ -1,24 +1,19 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { tap, delay, catchError } from 'rxjs/operators';
 import { DashboardDataDto } from '../models/dashboard.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardService {
-  // L'état central du dashboard
+  private http = inject(HttpClient);
   dashboardState = signal<DashboardDataDto | null>(null);
 
-  constructor() {}
-
-  /**
-   * Simule un appel HTTP vers le backend pour récupérer les stats du dashboard
-   */
-  async fetchDashboardData(): Promise<void> {
-    // Simulation de la latence réseau (1.5 secondes)
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Données mockées respectant les DTOs
-    const mockData: DashboardDataDto = {
+  private getMockData(): DashboardDataDto {
+    return {
       kpis: {
         totalImmeubles: 3,
         tendanceImmeubles: { valeur: '+0', type: 'neutre' },
@@ -48,7 +43,25 @@ export class DashboardService {
         { icone: 'lucideUserPlus', texte: 'Nouveau locataire — Apt D4 (Traoré Jean)', temps: 'Il y a 2j', type: 'succes' }
       ]
     };
+  }
 
-    this.dashboardState.set(mockData);
+  public fetchDashboardData(): Observable<DashboardDataDto> {
+    const mockData = this.getMockData();
+
+    if (environment.useMocks) {
+      return of(mockData).pipe(
+        delay(300),
+        tap(data => this.dashboardState.set(data))
+      );
+    }
+
+    return this.http.get<DashboardDataDto>(`${environment.apiUrl}/dashboard`).pipe(
+      tap(data => this.dashboardState.set(data)),
+      catchError(err => {
+        console.warn('Endpoint /api/dashboard non disponible, chargement des données de démonstration.', err);
+        this.dashboardState.set(mockData);
+        return of(mockData);
+      })
+    );
   }
 }

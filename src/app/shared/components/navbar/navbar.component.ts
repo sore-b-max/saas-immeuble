@@ -1,12 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { 
   lucideMenu, lucideX, lucideHome, lucideBuilding, 
   lucideUsers, lucideBanknote, lucideWrench, lucideZap, 
-  lucideFileText, lucideSettings, lucideLogOut 
+  lucideFileText, lucideSettings, lucideLogOut, lucideUser 
 } from '@ng-icons/lucide';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -19,8 +20,7 @@ import {
           <div class="flex">
             <!-- Logo -->
             <div class="flex-shrink-0 flex items-center mr-8">
-              <a routerLink="/" class="flex items-center gap-3 hover:opacity-90 transition-opacity mt-1">
-                <!-- SVG Icon -->
+              <a routerLink="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition-opacity mt-1">
                 <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-sm">
                   <defs>
                     <linearGradient id="logoGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
@@ -36,7 +36,6 @@ import {
                   <path d="M22 62 C30 38 55 30 78 40" stroke="#60a5fa" stroke-width="6" stroke-linecap="round" fill="transparent"/>
                   <circle cx="22" cy="62" r="5" fill="#60a5fa"/>
                 </svg>
-                <!-- Texts -->
                 <div class="flex flex-col justify-center">
                   <span class="text-2xl font-black tracking-tight" style="color: #111827; line-height: 1.1;">
                     Immo<span class="text-blue-500">SaaS</span>
@@ -52,7 +51,7 @@ import {
             <div class="hidden lg:ml-4 lg:flex lg:space-x-2 items-center">
               <a *ngFor="let item of menuItems" 
                  [routerLink]="item.path"
-                 [routerLinkActiveOptions]="{exact: item.path === '/'}"
+                 [routerLinkActiveOptions]="{exact: item.path === '/dashboard'}"
                  routerLinkActive="text-blue-700 bg-blue-50 font-semibold shadow-sm ring-1 ring-blue-500/10"
                  class="text-slate-500 hover:text-blue-600 hover:bg-blue-50/50 inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                  [title]="item.name">
@@ -62,39 +61,38 @@ import {
           </div>
           
           <div class="hidden lg:ml-6 lg:flex lg:items-center">
-            <!-- Right side desktop -->
             <div class="ml-4 relative flex items-center gap-3">
-              <a routerLink="/parametres" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors rounded-lg">
+              <a routerLink="/parametres" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors rounded-lg" title="Paramètres">
                 <ng-icon name="lucideSettings" size="18px"></ng-icon>
               </a>
               <div class="h-4 w-px bg-slate-200 mx-1"></div>
               
               <!-- Profile Dropdown Container -->
               <div class="relative">
-                <button (click)="toggleProfileMenu()" (blur)="closeProfileMenuDelayed()" class="flex items-center gap-2 cursor-pointer group focus:outline-none">
+                <button (click)="toggleProfileMenu($event)" class="flex items-center gap-2 cursor-pointer group focus:outline-none">
                   <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-sm shadow-sm group-hover:shadow group-hover:scale-105 transition-all duration-200">
                     P
                   </div>
                 </button>
                 
                 <!-- Dropdown Menu -->
-                <div *ngIf="isProfileMenuOpen()" class="absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-slate-100 focus:outline-none animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                <div *ngIf="isProfileMenuOpen()" (click)="$event.stopPropagation()" class="absolute right-0 mt-2 w-52 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-slate-100 focus:outline-none animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                   <div class="px-4 py-3">
                     <p class="text-sm text-slate-900 font-semibold">Compte Propriétaire</p>
                     <p class="text-sm font-medium text-slate-500 truncate">admin&#64;immosaas.com</p>
                   </div>
                   <div class="py-1">
-                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                      <ng-icon name="lucideUsers" size="16px" class="mr-3 text-slate-400 group-hover:text-blue-500"></ng-icon> Mon Profil
+                    <a routerLink="/profil" (click)="closeProfileMenu()" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                      <ng-icon name="lucideUser" size="16px" class="mr-3 text-slate-400 group-hover:text-blue-500"></ng-icon> Mon Profil
                     </a>
-                    <a routerLink="/parametres" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                    <a routerLink="/parametres" (click)="closeProfileMenu()" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                       <ng-icon name="lucideSettings" size="16px" class="mr-3 text-slate-400 group-hover:text-blue-500"></ng-icon> Paramètres
                     </a>
                   </div>
                   <div class="py-1">
-                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
+                    <button (click)="logout($event)" class="w-full text-left group flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
                       <ng-icon name="lucideLogOut" size="16px" class="mr-3 text-red-400 group-hover:text-red-500"></ng-icon> Déconnexion
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -116,7 +114,7 @@ import {
         <div class="pt-2 pb-3 space-y-1 px-4">
           <a *ngFor="let item of menuItems" 
              [routerLink]="item.path" 
-             [routerLinkActiveOptions]="{exact: item.path === '/'}"
+             [routerLinkActiveOptions]="{exact: item.path === '/dashboard'}"
              (click)="toggleMobileMenu()"
              routerLinkActive="bg-blue-50/80 border-blue-600 text-blue-700 font-semibold"
              class="border-transparent text-slate-600 hover:bg-blue-50/50 hover:border-blue-300 hover:text-blue-600 block pl-3 pr-4 py-3 border-l-4 text-base font-medium transition-all flex items-center rounded-r-lg group">
@@ -135,12 +133,15 @@ import {
             </div>
           </div>
           <div class="mt-4 space-y-1 px-4">
+            <a routerLink="/profil" (click)="toggleMobileMenu()" class="block px-4 py-2 text-base font-medium text-slate-600 hover:text-blue-600 hover:bg-white rounded-lg transition-colors flex items-center">
+              <ng-icon name="lucideUser" size="20px" class="mr-3 text-slate-400"></ng-icon> Mon Profil
+            </a>
             <a routerLink="/parametres" (click)="toggleMobileMenu()" class="block px-4 py-2 text-base font-medium text-slate-600 hover:text-blue-600 hover:bg-white rounded-lg transition-colors flex items-center">
               <ng-icon name="lucideSettings" size="20px" class="mr-3 text-slate-400"></ng-icon> Paramètres
             </a>
-            <a href="#" class="block px-4 py-2 text-base font-medium text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center">
+            <button (click)="logout($event)" class="w-full text-left block px-4 py-2 text-base font-medium text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center">
               <ng-icon name="lucideLogOut" size="20px" class="mr-3"></ng-icon> Déconnexion
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -150,16 +151,19 @@ import {
     provideIcons({ 
       lucideMenu, lucideX, lucideHome, lucideBuilding, 
       lucideUsers, lucideBanknote, lucideWrench, lucideZap, 
-      lucideFileText, lucideSettings, lucideLogOut 
+      lucideFileText, lucideSettings, lucideLogOut, lucideUser 
     })
   ]
 })
 export class NavbarComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   isMobileMenuOpen = signal(false);
   isProfileMenuOpen = signal(false);
 
   menuItems = [
-    { name: 'Tableau de bord', path: '/', icon: 'lucideHome' },
+    { name: 'Tableau de bord', path: '/dashboard', icon: 'lucideHome' },
     { name: 'Loyers', path: '/loyers', icon: 'lucideBanknote' },
     { name: 'Appartements', path: '/appartements', icon: 'lucideBuilding' },
     { name: 'Locataires', path: '/locataires', icon: 'lucideUsers' },
@@ -172,14 +176,19 @@ export class NavbarComponent {
     this.isMobileMenuOpen.update(val => !val);
   }
 
-  toggleProfileMenu() {
+  toggleProfileMenu(event?: Event) {
+    if (event) event.stopPropagation();
     this.isProfileMenuOpen.update(val => !val);
   }
 
-  closeProfileMenuDelayed() {
-    // Permet au clic sur un lien du menu de s'exécuter avant de fermer le menu
-    setTimeout(() => {
-      this.isProfileMenuOpen.set(false);
-    }, 150);
+  closeProfileMenu() {
+    this.isProfileMenuOpen.set(false);
+  }
+
+  logout(event: Event) {
+    event.preventDefault();
+    this.closeProfileMenu();
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

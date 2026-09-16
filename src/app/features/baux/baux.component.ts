@@ -56,15 +56,16 @@ export class BauxComponent implements OnInit {
     montantCaution: [0, [Validators.required, Validators.min(0)]]
   });
 
-  async ngOnInit() {
-    try {
-      this.isFetchingData.set(true);
-      await this.bailService.fetchBaux();
-    } catch (err) {
-      this.toastService.showError("Erreur lors du chargement des baux");
-    } finally {
-      this.isFetchingData.set(false);
-    }
+  ngOnInit() {
+    this.isFetchingData.set(true);
+    this.bailService.fetchBaux().subscribe({
+      next: () => this.isFetchingData.set(false),
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors du chargement des baux");
+        this.isFetchingData.set(false);
+      }
+    });
   }
 
   ouvrirModale() {
@@ -86,7 +87,6 @@ export class BauxComponent implements OnInit {
     this.afficherModal.set(false);
   }
 
-  // Permet de pré-remplir le loyer en fonction de l'appartement choisi
   onAppartementChange() {
     const appartId = this.bailForm.get('appartementId')?.value;
     if (appartId) {
@@ -94,7 +94,7 @@ export class BauxComponent implements OnInit {
       if (appart) {
         this.bailForm.patchValue({
           montantLoyerBase: appart.loyer || 0,
-          montantCaution: (appart.loyer || 0) * 2 // Caution par défaut : 2 mois
+          montantCaution: (appart.loyer || 0) * 2
         });
       }
     }
@@ -102,24 +102,26 @@ export class BauxComponent implements OnInit {
 
   isSubmitting = signal(false);
 
-  async enregistrerBail() {
+  enregistrerBail() {
     if (this.bailForm.invalid) {
       this.toastService.showError('Veuillez remplir tous les champs obligatoires correctement.');
       return;
     }
 
     this.isSubmitting.set(true);
-    try {
-      const formValue = this.bailForm.getRawValue();
-      await this.bailService.ajouterBail(formValue);
-      
-      this.toastService.showSuccess('Bail créé avec succès !');
-      this.fermerModale();
-    } catch(err) {
-      this.toastService.showError("Une erreur s'est produite lors de la création du bail.");
-    } finally {
-      this.isSubmitting.set(false);
-    }
+    const formValue = this.bailForm.getRawValue();
+    this.bailService.ajouterBail(formValue).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Bail créé avec succès !');
+        this.fermerModale();
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Une erreur s'est produite lors de la création du bail.");
+        this.isSubmitting.set(false);
+      }
+    });
   }
 
   telechargerContrat(bail: any) {
@@ -136,31 +138,37 @@ export class BauxComponent implements OnInit {
     this.toastService.showSuccess('Le téléchargement du contrat a démarré !');
   }
 
-  async resilierBail(id: number) {
+  resilierBail(id: number) {
     if (confirm('Êtes-vous sûr de vouloir résilier ce bail ? L\'appartement deviendra libre.')) {
       this.isSubmitting.set(true);
-      try {
-        await this.bailService.resilierBail(id, new Date());
-        this.toastService.showSuccess('Le bail a été résilié avec succès.');
-      } catch (err) {
-        this.toastService.showError('Erreur lors de la résiliation du bail.');
-      } finally {
-        this.isSubmitting.set(false);
-      }
+      this.bailService.resilierBail(id, new Date()).subscribe({
+        next: () => {
+          this.toastService.showSuccess('Le bail a été résilié avec succès.');
+          this.isSubmitting.set(false);
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.showError('Erreur lors de la résiliation du bail.');
+          this.isSubmitting.set(false);
+        }
+      });
     }
   }
 
-  async renouvelerBail(id: number) {
+  renouvelerBail(id: number) {
     if (confirm('Voulez-vous renouveler ce bail pour 1 an supplémentaire ?')) {
       this.isSubmitting.set(true);
-      try {
-        await this.bailService.renouvelerBail(id);
-        this.toastService.showSuccess('Le bail a été renouvelé !');
-      } catch (err) {
-        this.toastService.showError('Erreur lors du renouvellement du bail.');
-      } finally {
-        this.isSubmitting.set(false);
-      }
+      this.bailService.renouvelerBail(id).subscribe({
+        next: () => {
+          this.toastService.showSuccess('Le bail a été renouvelé !');
+          this.isSubmitting.set(false);
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.showError('Erreur lors du renouvellement du bail.');
+          this.isSubmitting.set(false);
+        }
+      });
     }
   }
 
@@ -170,7 +178,7 @@ export class BauxComponent implements OnInit {
     const aujourdhui = new Date();
     const diffTime = Math.abs(fin.getTime() - aujourdhui.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    return diffDays <= 60 && fin > aujourdhui; // Vrai si expire dans moins de 60 jours
+    return diffDays <= 60 && fin > aujourdhui;
   }
 
   getLocataireNom(id: number): string {

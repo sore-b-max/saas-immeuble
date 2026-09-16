@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideEdit, lucideDownload, lucideBell, lucideExternalLink } from '@ng-icons/lucide';
+import { lucideEdit, lucideDownload, lucideBell, lucideExternalLink, lucideFileSpreadsheet } from '@ng-icons/lucide';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { PaiementService } from '../../core/services/paiement.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -10,17 +10,20 @@ import { QuittancePdfService } from '../../core/services/quittance-pdf.service';
 import { LocataireService } from '../../core/services/locataire.service';
 import { AppartementService } from '../../core/services/appartement.service';
 import { ImmeubleService } from '../../core/services/immeuble.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import { QuittanceData } from '../../core/models/quittance.model';
+import { LottiePlayerComponent } from '../../shared/components/lottie-player/lottie-player.component';
 
 @Component({
   selector: 'app-loyers',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIconComponent, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, NgIconComponent, ReactiveFormsModule, LottiePlayerComponent],
   templateUrl: './loyers.component.html',
-  providers: [provideIcons({ lucideEdit, lucideDownload, lucideBell, lucideExternalLink })]
+  providers: [provideIcons({ lucideEdit, lucideDownload, lucideBell, lucideExternalLink, lucideFileSpreadsheet })]
 })
 export class LoyersComponent implements OnInit {
   public paiementService = inject(PaiementService);
+  private csvExportService = inject(CsvExportService);
 
   // Signaux d'état
   isLoading = signal(true);
@@ -56,15 +59,26 @@ export class LoyersComponent implements OnInit {
     reference: ['']
   });
 
-  async ngOnInit() {
-    try {
-      this.isLoading.set(true);
-      await this.paiementService.fetchPaiements();
-    } catch (err) {
-      this.toastService.showError("Erreur lors du chargement des paiements");
-    } finally {
-      this.isLoading.set(false);
+  ngOnInit() {
+    this.isLoading.set(true);
+    this.paiementService.fetchPaiements().subscribe({
+      next: () => this.isLoading.set(false),
+      error: (err) => {
+        console.error(err);
+        this.toastService.showError("Erreur lors du chargement des paiements");
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  exporterCSV() {
+    const list = this.paiements();
+    if (!list || list.length === 0) {
+      this.toastService.showError("Aucun paiement à exporter.");
+      return;
     }
+    this.csvExportService.exportPaiements(list);
+    this.toastService.showSuccess("Liste des paiements exportée en CSV avec succès !");
   }
 
   ouvrirModale(paiement?: any) {
@@ -84,46 +98,60 @@ export class LoyersComponent implements OnInit {
     this.afficherModal.set(true);
   }
 
-  async enregistrerPaiement() {
+  enregistrerPaiement() {
     if (this.paiementForm.invalid) return;
     
     this.isSubmitting.set(true);
+    const formValue = this.paiementForm.getRawValue();
+    const paiementId = this.paiementEnEdition();
 
-    try {
-      const formValue = this.paiementForm.getRawValue();
-      const paiementId = this.paiementEnEdition();
-
-      if (paiementId) {
-        await this.paiementService.modifierPaiement(paiementId, {
-          appartementId: formValue.appartementId,
-          locataireId: formValue.locataireId,
-          montant: formValue.montant,
-          modePaiement: formValue.modePaiement as any,
-          reference: formValue.reference
-        });
-        this.toastService.showSuccess('Paiement modifié avec succès !');
-      } else {
-        await this.paiementService.ajouterPaiement({
-          appartementId: formValue.appartementId,
-          locataireId: formValue.locataireId,
-          montant: formValue.montant,
-          modePaiement: formValue.modePaiement as any,
-          reference: formValue.reference,
-          moisConcerne: '2026-08',
-          datePaiement: new Date(),
-          statut: 'paye'
-        });
-        this.toastService.showSuccess('Loyer encaissé avec succès !');
-      }
-
-      this.afficherModal.set(false);
-      this.paiementEnEdition.set(null);
-      this.paiementForm.reset({ modePaiement: 'especes' });
-    } catch (e) {
-      this.toastService.showError("Une erreur s'est produite.");
-    } finally {
-      this.isSubmitting.set(false);
+    if (paiementId) {
+      this.paiementService.modifierPaiement(paiementId, {
+        appartementId: formValue.appartementId,
+        locataireId: formValue.locataireId,
+        montant: formValue.montant,
+        modePaiement: formValue.modePaiement as any,
+        reference: formValue.reference
+      }).subscribe({
+        next: () => {
+          this.toastService.showSuccess('Paiement modifié avec succès !');
+          this.fermerModal();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.showError("Une erreur s'est produite.");
+          this.isSubmitting.set(false);
+        }
+      });
+    } else {
+      this.paiementService.ajouterPaiement({
+        appartementId: formValue.appartementId,
+        locataireId: formValue.locataireId,
+        montant: formValue.montant,
+        modePaiement: formValue.modePaiement as any,
+        reference: formValue.reference,
+        moisConcerne: '2026-08',
+        datePaiement: new Date().toISOString().split('T')[0] as any as Date,
+        statut: 'paye'
+      }).subscribe({
+        next: () => {
+          this.toastService.showSuccess('Loyer encaissé avec succès !');
+          this.fermerModal();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.showError("Une erreur s'est produite.");
+          this.isSubmitting.set(false);
+        }
+      });
     }
+  }
+
+  private fermerModal() {
+    this.afficherModal.set(false);
+    this.paiementEnEdition.set(null);
+    this.paiementForm.reset({ modePaiement: 'especes' });
+    this.isSubmitting.set(false);
   }
 
   telechargerQuittance(paiement: any) {
@@ -158,8 +186,10 @@ export class LoyersComponent implements OnInit {
   }
 
   envoyerRappel(paiement: any) {
-    // Marque le rappel comme envoyé localement pour l'UI
-    this.paiementService.modifierPaiement(paiement.id, { rappelEnvoye: true });
-    this.toastService.showSuccess('Rappel SMS envoyé avec succès au locataire !');
+    this.paiementService.modifierPaiement(paiement.id, { rappelEnvoye: true }).subscribe({
+      next: () => this.toastService.showSuccess('Rappel SMS envoyé avec succès au locataire !'),
+      error: (err) => console.error(err)
+    });
   }
 }
+

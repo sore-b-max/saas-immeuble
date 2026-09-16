@@ -4,16 +4,35 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-  <!-- EN-TÊTE -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Vue d'ensemble</h1>
-      <p class="text-slate-500 text-sm mt-1">Gérez votre patrimoine immobilier en toute simplicité.</p>
+  <!-- EN-TÊTE AVEC BANNIÈRE LUMINEUSE ET HARMONIEUSE -->
+  <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white mb-8 shadow-xl shadow-indigo-500/15 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border border-indigo-400/20">
+    <!-- Ambient subtle background glow inside banner -->
+    <div class="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+    <div class="absolute -bottom-12 -left-12 w-64 h-64 bg-blue-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold uppercase tracking-wider mb-3 backdrop-blur-md border border-white/20">
+        <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> Tableau de bord en direct
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Vue d'ensemble Immobilière</h1>
+      <p class="text-blue-100 text-sm mt-2 leading-relaxed font-medium">
+        Suivez les encaissements, le taux d'occupation et gérez les alertes de votre patrimoine en temps réel.
+      </p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button routerLink="/loyers" class="bg-white hover:bg-blue-50 text-blue-700 font-bold text-sm py-2.5 px-5 rounded-xl shadow-lg shadow-black/10 hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer active:scale-95">
+          <ng-icon name="lucidePlus" size="16px"></ng-icon> Encaisser un loyer
+        </button>
+        <button (click)="exporterRapport()" class="bg-indigo-900/30 hover:bg-indigo-900/50 text-white font-semibold text-sm py-2.5 px-5 rounded-xl transition-all border border-white/25 backdrop-blur-md flex items-center gap-2 cursor-pointer active:scale-95">
+          <ng-icon name="lucideDownload" size="16px"></ng-icon> Exporter Rapport CSV
+        </button>
+      </div>
     </div>
-    <div>
-      <button routerLink="/loyers" class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2 px-4 rounded-md shadow-sm transition-all flex items-center gap-2">
-        <ng-icon name="lucidePlus" size="16px"></ng-icon> Ajouter un paiement
-      </button>
+    
+    <div class="relative z-10 shrink-0 flex items-center justify-center">
+      <div class="relative group">
+        <div class="absolute inset-0 bg-white/15 rounded-full blur-xl group-hover:bg-white/25 transition-all"></div>
+        <app-lottie-player path="/assets/animations/finance-chart.json" width="180px" height="180px" [loop]="true" [autoplay]="true" class="relative z-10 filter drop-shadow-lg"></app-lottie-player>
+      </div>
     </div>
   </div>
 
@@ -63,7 +82,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
 
       <!-- Immeubles -->
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl p-5 border border-white/50 shadow-sm flex flex-col justify-between h-32 hover:shadow-md transition-all">
         <div class="flex justify-between items-start">
           <span class="text-slate-500 text-sm font-medium">Immeubles</span>
           <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
@@ -80,7 +99,7 @@
       </div>
 
       <!-- Appartements -->
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl p-5 border border-white/50 shadow-sm flex flex-col justify-between h-32 hover:shadow-md transition-all">
         <div class="flex justify-between items-start">
           <span class="text-slate-500 text-sm font-medium">Appartements</span>
           <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
@@ -97,7 +116,7 @@
       </div>
 
       <!-- Locataires -->
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl p-5 border border-white/50 shadow-sm flex flex-col justify-between h-32 hover:shadow-md transition-all">
         <div class="flex justify-between items-start">
           <span class="text-slate-500 text-sm font-medium">Locataires actifs</span>
           <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
@@ -114,7 +133,7 @@
       </div>
 
       <!-- Taux d'occupation -->
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl p-5 border border-white/50 shadow-sm flex flex-col justify-between h-32 hover:shadow-md transition-all">
         <div class="flex justify-between items-start">
           <span class="text-slate-500 text-sm font-medium">Taux d'occupation</span>
           <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
@@ -135,7 +154,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
       <!-- Graphique & Revenus (Prend 2 colonnes sur 3) -->
-      <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col">
+      <div class="lg:col-span-2 bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm p-6 flex flex-col hover:shadow-md transition-all">
         <div class="flex justify-between items-start mb-6">
           <div>
             <h2 class="text-base font-semibold text-slate-800">Revenus Nets</h2>
@@ -160,7 +179,7 @@
       </div>
 
       <!-- Statut des loyers (1 colonne) -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm p-6 hover:shadow-md transition-all">
         <h2 class="text-base font-semibold text-slate-800 mb-6">Loyers — Août 2026</h2>
 
         <div class="space-y-3 mb-6">
@@ -211,7 +230,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- Accès Rapide -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm p-6 hover:shadow-md transition-all">
         <h2 class="text-base font-semibold text-slate-800 mb-4">Accès rapide</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <a routerLink="/locataires" class="flex flex-col items-center p-4 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-slate-600 hover:text-blue-600 group">
@@ -242,7 +261,7 @@
       </div>
 
       <!-- Activités récentes -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm p-6 hover:shadow-md transition-all">
         <h2 class="text-base font-semibold text-slate-800 mb-4">Activités récentes</h2>
         <div class="space-y-1">
           @for (activite of data.activitesRecentes; track activite.texte) {
@@ -267,5 +286,13 @@
       </div>
 
     </div>
+  } @else {
+    <div class="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+      <p class="text-slate-600 font-medium mb-4">Impossible de charger les données du tableau de bord.</p>
+      <button (click)="ngOnInit()" class="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+        Réessayer
+      </button>
+    </div>
   }
 </div>
+

@@ -1,35 +1,35 @@
 @if (toast().visible) {
-  <div class="fixed bottom-6 right-6 z-[100] transition-all duration-300 transform translate-y-0 opacity-100"
+  <div class="fixed bottom-6 right-6 z-[100] transition-all duration-300 transform translate-y-0 opacity-100 animate-in slide-in-from-bottom-5 duration-300"
        [class.translate-y-10]="!toast().visible"
        [class.opacity-0]="!toast().visible">
     
-    <div class="flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border"
+    <div class="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border backdrop-blur-md"
          [ngClass]="{
-           'bg-green-50 border-green-200 text-green-800': toast().type === 'success',
-           'bg-red-50 border-red-200 text-red-800': toast().type === 'error',
-           'bg-blue-50 border-blue-200 text-blue-800': toast().type === 'info'
+           'bg-emerald-900/90 border-emerald-700/50 text-white shadow-emerald-950/20': toast().type === 'success',
+           'bg-rose-900/90 border-rose-700/50 text-white shadow-rose-950/20': toast().type === 'error',
+           'bg-slate-900/90 border-slate-700/50 text-white shadow-slate-950/20': toast().type === 'info'
          }">
       
-      <!-- Icon -->
-      <div>
+      <!-- Icon / Lottie -->
+      <div class="shrink-0 flex items-center justify-center">
         @if (toast().type === 'success') {
-          <ng-icon name="lucideCheckCircle" class="text-green-500" size="20px"></ng-icon>
+          <app-lottie-player path="/assets/animations/success-check.json" width="28px" height="28px" [loop]="false" [autoplay]="true"></app-lottie-player>
         }
         @if (toast().type === 'error') {
-          <ng-icon name="lucideAlertCircle" class="text-red-500" size="20px"></ng-icon>
+          <ng-icon name="lucideAlertCircle" class="text-rose-400" size="22px"></ng-icon>
         }
         @if (toast().type === 'info') {
-          <ng-icon name="lucideInfo" class="text-blue-500" size="20px"></ng-icon>
+          <ng-icon name="lucideInfo" class="text-sky-400" size="22px"></ng-icon>
         }
       </div>
 
       <!-- Message -->
-      <div class="font-medium text-sm pr-4">
+      <div class="font-semibold text-sm pr-4">
         {{ toast().message }}
       </div>
 
       <!-- Close Button -->
-      <button (click)="fermer()" class="ml-auto text-gray-400 hover:text-gray-600 transition-colors">
+      <button (click)="fermer()" class="ml-auto text-slate-300 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10">
         <ng-icon name="lucideX" size="16px"></ng-icon>
       </button>
 
